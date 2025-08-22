@@ -5,7 +5,6 @@
  */
 
 import { EXIFData, LocationData, PhotoAsset } from '@/types';
-import * as FileSystem from 'expo-file-system';
 
 export interface ProcessedMetadata {
   exifData: EXIFData;

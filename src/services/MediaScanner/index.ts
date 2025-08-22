@@ -12,22 +12,22 @@ export interface MediaScannerConfig {
   batchSize: number;
   processingDelay: number; // ms between batches to prevent UI blocking
   includeVideos: boolean;
-  sortBy: MediaLibrary.SortBy[];
-  mediaType: MediaLibrary.MediaType[];
+  sortBy: MediaLibrary.SortByValue[];
+  mediaType: MediaLibrary.MediaTypeValue[];
 }
 
 export class MediaScanner {
   private static instance: MediaScanner;
   private isScanning = false;
   private scanAbortController: AbortController | null = null;
-  private progressCallbacks: Array<(progress: ScanProgress) => void> = [];
+  private progressCallbacks: ((progress: ScanProgress) => void)[] = [];
   
   private config: MediaScannerConfig = {
     batchSize: 100, // Process 100 photos at a time
     processingDelay: 50, // 50ms delay between batches
     includeVideos: true,
-    sortBy: [MediaLibrary.SortBy.creationTime],
-    mediaType: [MediaLibrary.MediaType.photo, MediaLibrary.MediaType.video]
+    sortBy: ['creationTime'],
+    mediaType: ['photo', 'video']
   };
 
   static getInstance(): MediaScanner {
@@ -180,28 +180,37 @@ export class MediaScanner {
           sortBy: this.config.sortBy
         });
 
-        // Convert MediaLibrary assets to our PhotoAsset format
-        const batchAssets: PhotoAsset[] = result.assets.map(asset => ({
-          id: asset.id,
-          uri: asset.uri,
-          filename: asset.filename,
-          width: asset.width,
-          height: asset.height,
-          creationTime: asset.creationTime,
-          modificationTime: asset.modificationTime,
-          mediaType: asset.mediaType,
-          mediaSubtypes: asset.mediaSubtypes,
-          albumId: asset.albumId,
-          duration: asset.duration,
-          location: asset.location ? {
-            latitude: asset.location.latitude,
-            longitude: asset.location.longitude,
-            altitude: asset.location.altitude,
-            accuracy: asset.location.accuracy,
-            heading: asset.location.heading,
-            speed: asset.location.speed
-          } : undefined
-        }));
+        // Get detailed asset info with location data for each asset
+        const assetInfos = await Promise.all(
+          result.assets.map(asset => MediaLibrary.getAssetInfoAsync(asset.id))
+        );
+
+        // Convert MediaLibrary assets to our PhotoAsset format, filtering out non-photo/video types
+        const batchAssets: PhotoAsset[] = assetInfos
+          .filter((asset): asset is MediaLibrary.AssetInfo & { mediaType: 'photo' | 'video' } => 
+            asset.mediaType === 'photo' || asset.mediaType === 'video'
+          )
+          .map(asset => ({
+            id: asset.id,
+            uri: asset.uri,
+            filename: asset.filename,
+            width: asset.width,
+            height: asset.height,
+            creationTime: asset.creationTime,
+            modificationTime: asset.modificationTime,
+            mediaType: asset.mediaType,
+            mediaSubtypes: asset.mediaSubtypes,
+            albumId: asset.albumId,
+            duration: asset.duration,
+            location: asset.location ? {
+              latitude: asset.location.latitude,
+              longitude: asset.location.longitude,
+              altitude: undefined, // MediaLibrary.Location doesn't have altitude
+              accuracy: undefined, // MediaLibrary.Location doesn't have accuracy
+              heading: undefined, // MediaLibrary.Location doesn't have heading
+              speed: undefined // MediaLibrary.Location doesn't have speed
+            } : undefined
+          }));
 
         allAssets.push(...batchAssets);
         
@@ -224,7 +233,7 @@ export class MediaScanner {
 
       } catch (error) {
         console.error('Error during batch scan:', error);
-        throw this.createError('SCAN_INTERRUPTED', `Scan failed during batch processing: ${error.message}`);
+        throw this.createError('SCAN_INTERRUPTED', `Scan failed during batch processing: ${error instanceof Error ? error.message : String(error)}`);
       }
     }
 
@@ -268,8 +277,18 @@ export class MediaScanner {
           createdAfter: lastScanDate
         });
 
-        const batchAssets: PhotoAsset[] = result.assets
-          .filter(asset => asset.creationTime > lastScanDate.getTime())
+        // Get detailed asset info with location data for each asset
+        const assetInfos = await Promise.all(
+          result.assets
+            .filter(asset => asset.creationTime > lastScanDate.getTime())
+            .map(asset => MediaLibrary.getAssetInfoAsync(asset.id))
+        );
+
+        // Convert to PhotoAsset format, filtering out non-photo/video types
+        const batchAssets: PhotoAsset[] = assetInfos
+          .filter((asset): asset is MediaLibrary.AssetInfo & { mediaType: 'photo' | 'video' } => 
+            asset.mediaType === 'photo' || asset.mediaType === 'video'
+          )
           .map(asset => ({
             id: asset.id,
             uri: asset.uri,
@@ -285,10 +304,10 @@ export class MediaScanner {
             location: asset.location ? {
               latitude: asset.location.latitude,
               longitude: asset.location.longitude,
-              altitude: asset.location.altitude,
-              accuracy: asset.location.accuracy,
-              heading: asset.location.heading,
-              speed: asset.location.speed
+              altitude: undefined, // MediaLibrary.Location doesn't have altitude
+              accuracy: undefined, // MediaLibrary.Location doesn't have accuracy
+              heading: undefined, // MediaLibrary.Location doesn't have heading
+              speed: undefined // MediaLibrary.Location doesn't have speed
             } : undefined
           }));
 
@@ -312,7 +331,7 @@ export class MediaScanner {
 
       } catch (error) {
         console.error('Error during incremental scan:', error);
-        throw this.createError('SCAN_INTERRUPTED', `Incremental scan failed: ${error.message}`);
+        throw this.createError('SCAN_INTERRUPTED', `Incremental scan failed: ${error instanceof Error ? error.message : String(error)}`);
       }
     }
 
@@ -373,7 +392,7 @@ export class MediaScanner {
       processedPhotos: 0,
       stage: 'error',
       percentage: 0,
-      error: error.message
+      error: error instanceof Error ? error.message : String(error)
     });
   }
 }
