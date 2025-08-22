@@ -43,12 +43,12 @@ export const typography = {
     '4xl': 38,
   },
 
-  // Letter Spacing
+  // Letter Spacing (React Native expects numbers, not em strings)
   letterSpacing: {
-    tight: '-0.02em',
-    normal: '0em',
-    wide: '0.01em',
-    wider: '0.02em',
+    tight: -0.32, // Approximate -0.02em conversion
+    normal: 0,
+    wide: 0.16,   // Approximate 0.01em conversion
+    wider: 0.32,  // Approximate 0.02em conversion
   },
 
   // Text Styles
@@ -57,31 +57,31 @@ export const typography = {
       fontSize: 32,
       lineHeight: 38,
       fontWeight: '700',
-      letterSpacing: '-0.02em',
+      letterSpacing: -0.64, // -0.02em converted
     },
     h2: {
       fontSize: 28,
       lineHeight: 34,
       fontWeight: '600',
-      letterSpacing: '-0.01em',
+      letterSpacing: -0.28, // -0.01em converted
     },
     h3: {
       fontSize: 24,
       lineHeight: 30,
       fontWeight: '600',
-      letterSpacing: '0em',
+      letterSpacing: 0,
     },
     h4: {
       fontSize: 20,
       lineHeight: 26,
       fontWeight: '500',
-      letterSpacing: '0em',
+      letterSpacing: 0,
     },
     h5: {
       fontSize: 16,
       lineHeight: 22,
       fontWeight: '500',
-      letterSpacing: '0.01em',
+      letterSpacing: 0.16, // 0.01em converted
     },
     bodyLarge: {
       fontSize: 18,
@@ -102,20 +102,20 @@ export const typography = {
       fontSize: 12,
       lineHeight: 16,
       fontWeight: '400',
-      letterSpacing: '0.01em',
+      letterSpacing: 0.12, // 0.01em converted
     },
     label: {
       fontSize: 14,
       lineHeight: 18,
       fontWeight: '500',
-      letterSpacing: '0.02em',
+      letterSpacing: 0.28, // 0.02em converted
       textTransform: 'uppercase' as const,
     },
     button: {
       fontSize: 16,
       lineHeight: 24,
       fontWeight: '500',
-      letterSpacing: '0.01em',
+      letterSpacing: 0.16, // 0.01em converted
     },
     code: {
       fontSize: 14,
