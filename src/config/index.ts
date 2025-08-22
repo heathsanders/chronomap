@@ -3,16 +3,16 @@
  * Centralized export of all design tokens
  */
 
-export { colors, type ColorKey } from './colors';
-export { typography, type TypographyStyle } from './typography';
-export { spacing, type SpacingKey } from './spacing';
+export { colors, type ColorKey } from "./colors";
+export { typography, type TypographyStyle } from "./typography";
+export { spacing, type SpacingKey } from "./spacing";
 
 // Application constants
 export const APP_CONFIG = {
-  name: 'ChronoMap',
-  version: '1.0.0',
-  description: 'Privacy-first photo organization',
-  
+  name: "ChronoMap",
+  version: "1.0.0",
+  description: "Privacy-first photo organization",
+
   // Performance targets
   performance: {
     launchTime: 3000, // 3 seconds

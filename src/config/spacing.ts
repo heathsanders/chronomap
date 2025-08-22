@@ -10,13 +10,13 @@ export const spacing = {
   unit: BASE_UNIT,
 
   // Spacing scale
-  xs: BASE_UNIT * 0.5,  // 4px
-  sm: BASE_UNIT * 1,    // 8px
-  md: BASE_UNIT * 2,    // 16px
-  lg: BASE_UNIT * 3,    // 24px
-  xl: BASE_UNIT * 4,    // 32px
-  '2xl': BASE_UNIT * 6, // 48px
-  '3xl': BASE_UNIT * 8, // 64px
+  xs: BASE_UNIT * 0.5, // 4px
+  sm: BASE_UNIT * 1, // 8px
+  md: BASE_UNIT * 2, // 16px
+  lg: BASE_UNIT * 3, // 24px
+  xl: BASE_UNIT * 4, // 32px
+  "2xl": BASE_UNIT * 6, // 48px
+  "3xl": BASE_UNIT * 8, // 64px
 
   // Photo grid specific spacing
   gridGap: 2,
@@ -29,9 +29,9 @@ export const spacing = {
 
   // Common use cases
   screenPadding: BASE_UNIT * 2.5, // 20px
-  sectionSpacing: BASE_UNIT * 3,  // 24px
-  itemSpacing: BASE_UNIT * 2,     // 16px
-  microSpacing: BASE_UNIT * 0.5,  // 4px
+  sectionSpacing: BASE_UNIT * 3, // 24px
+  itemSpacing: BASE_UNIT * 2, // 16px
+  microSpacing: BASE_UNIT * 0.5, // 4px
 } as const;
 
 export type SpacingKey = keyof typeof spacing;
