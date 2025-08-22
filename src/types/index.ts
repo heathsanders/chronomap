@@ -134,3 +134,88 @@ export interface AppError {
   details?: any;
   timestamp: Date;
 }
+
+// Database Service Types
+export interface DatabaseConfig {
+  name: string;
+  version: number;
+  encryptionKey?: string;
+}
+
+export interface QueryResult<T = any> {
+  rows: T[];
+  affectedRows: number;
+  insertId?: number;
+}
+
+// Location Service Types
+export interface GeocodeResult {
+  address: string;
+  city?: string;
+  region?: string;
+  country?: string;
+  postalCode?: string;
+  confidence: number;
+}
+
+export interface LocationCluster {
+  id: string;
+  centerLatitude: number;
+  centerLongitude: number;
+  radius: number; // in meters
+  photoCount: number;
+  displayName: string;
+  confidence: number;
+}
+
+export interface LocationValidationResult {
+  isValid: boolean;
+  errors: string[];
+  warnings: string[];
+  normalizedLocation?: LocationData;
+}
+
+// Privacy Manager Types
+export interface PrivacySettings {
+  allowLocationExtraction: boolean;
+  allowMetadataExtraction: boolean;
+  sanitizeEXIFBeforeSharing: boolean;
+  removeLocationFromShares: boolean;
+  allowCrashReporting: boolean;
+  allowAnalytics: boolean;
+  dataRetentionDays: number;
+  autoDeleteEnabled: boolean;
+}
+
+export interface DataExportOptions {
+  includePhotos: boolean;
+  includeMetadata: boolean;
+  includeLocation: boolean;
+  includeThumbnails: boolean;
+  format: 'json' | 'csv' | 'xml';
+  sanitizeData: boolean;
+}
+
+export interface PrivacyAuditResult {
+  timestamp: Date;
+  externalConnectionsDetected: number;
+  dataLeaksFound: string[];
+  complianceStatus: 'compliant' | 'warning' | 'violation';
+  recommendations: string[];
+}
+
+export interface ConsentRecord {
+  feature: string;
+  granted: boolean;
+  timestamp: Date;
+  version: string; // Privacy policy version
+}
+
+// EXIF Processor Types
+export interface ProcessedMetadata {
+  exifData: EXIFData;
+  extractedLocation?: LocationData;
+  creationDate: Date;
+  modificationDate: Date;
+  timezone?: string;
+}
