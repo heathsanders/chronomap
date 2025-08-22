@@ -97,6 +97,103 @@ Your implementations will be evaluated on:
 
 You deliver frontend implementations that serve as the seamless bridge between technical architecture and user experience, ensuring every interface is both functionally robust and experientially excellent.
 
+## Git Workflow Requirements
+
+### CRITICAL: Proper Git Branch Management
+You MUST follow this exact git workflow to prevent development issues:
+
+#### 1. Feature Branch Creation
+- **ALWAYS** create a new feature branch for each week/epic you work on
+- **NEVER** commit different weeks' work to the same branch
+- Format: `feature/week[N]-[description]` (e.g., `feature/week3-media-library-integration`)
+
+```bash
+# Start each new week with a fresh branch from main
+git checkout main
+git pull origin main
+git checkout -b feature/week3-media-library-integration
+```
+
+#### 2. Development Cycle
+- Commit frequently with descriptive messages following conventional commits
+- Push to remote branch regularly to maintain backup
+- **NEVER** mix different weeks/features in the same commit
+
+```bash
+# Regular development commits
+git add .
+git commit -m "feat: implement photo library permissions service"
+git push origin feature/week3-media-library-integration
+```
+
+#### 3. Planning Document Updates
+**MANDATORY**: You MUST update project-documentation/planning.md as you complete tasks:
+
+- Mark individual tasks as `[x]` when completed
+- Add completion summaries for major milestones
+- Update status from `- [ ]` to `- [x]` for each completed item
+- Include a **WEEK [N] COMPLETION SUMMARY** section when finished
+
+Example:
+```markdown
+#### Week 3: Media Library Integration ✅ COMPLETED
+- [x] Implement photo library permissions
+  - [x] Create PermissionManager service
+  - [x] Add permission request UI with clear rationales
+  - [x] Handle permission denial gracefully
+  - [x] Implement permission status monitoring
+
+**WEEK 3 COMPLETION SUMMARY** ✅
+**Status**: All Week 3 tasks successfully completed!
+```
+
+#### 4. Completion Process
+When you finish a week's work, follow these steps IN ORDER:
+
+1. **Update Planning Document** - Mark all tasks as completed
+2. **Final Commit** - Commit planning.md updates with completion summary
+3. **Type Check** - Run `npm run type-check` to verify no TypeScript errors
+4. **Lint Check** - Run `npm run lint` to verify code quality
+5. **Push Branch** - Push final branch to remote
+6. **Merge to Main** - Merge completed feature branch to main
+7. **Push Main** - Push updated main branch
+8. **Delete Feature Branch** - Clean up completed feature branch
+
+```bash
+# Final completion workflow
+git add project-documentation/planning.md
+git commit -m "docs: mark Week 3 - Media Library Integration as completed"
+npm run type-check
+npm run lint
+git push origin feature/week3-media-library-integration
+git checkout main
+git merge feature/week3-media-library-integration
+git push origin main
+git branch -d feature/week3-media-library-integration
+```
+
+#### 5. Error Prevention Rules
+- **NO commits to wrong branches** - Always verify current branch before committing
+- **NO mixed week implementations** - Each week gets its own dedicated branch
+- **NO incomplete planning updates** - Always update planning.md before finishing
+- **NO TypeScript errors** - Must pass type-check before completion
+- **NO skipping tests** - Run lint and type-check before merging
+
+#### 6. Branch Naming Convention
+- `feature/week1-project-setup`
+- `feature/week2-database-foundation`  
+- `feature/week3-media-library-integration`
+- `feature/week4-state-management-testing`
+- And so on...
+
+### Planning Document Context
+The development plan is tracked in `project-documentation/planning.md`. This document contains:
+- Epic 1 (Weeks 1-4): Foundation & Infrastructure
+- Epic 2 (Weeks 5-8): Timeline Core Experience
+- All subsequent epics and acceptance criteria
+
+You MUST keep this document updated as the single source of truth for project progress.
+
 <context>
 
 The Product Manager's specs are here: project-documentation/product-manager-output.md
