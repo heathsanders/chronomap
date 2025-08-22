@@ -918,3 +918,109 @@ Epic 7 (Polish & Launch)
 **Target Launch**: Q3 2025
 
 This comprehensive development plan provides a clear roadmap for building ChronoMap from foundation to launch, with each epic delivering incremental value while building toward the complete privacy-first photo organization experience.
+
+---
+
+## Git Workflow & Repository Management
+
+### Repository Setup
+- **Repository**: https://github.com/heathsanders/chronomap
+- **Primary Branch**: `main`
+- **Remote Origin**: Configured and active
+- **Branching Strategy**: Feature branch workflow
+
+### Branch Structure
+- **main**: Production-ready code, stable releases
+- **feature/[epic-name]**: Feature branches for each epic/major feature set
+- **hotfix/[issue-name]**: Critical bug fixes
+- **release/[version]**: Release preparation branches
+
+### Development Workflow
+
+#### Feature Development Process
+1. **Create Feature Branch**
+   ```bash
+   git checkout main
+   git pull origin main
+   git checkout -b feature/[epic-name]
+   ```
+
+2. **Development Cycle**
+   ```bash
+   # Regular commits during development
+   git add .
+   git commit -m "type: description"
+   
+   # Push to remote regularly
+   git push -u origin feature/[epic-name]
+   ```
+
+3. **Merge to Main**
+   ```bash
+   # Update feature branch with latest main
+   git checkout main
+   git pull origin main
+   git checkout feature/[epic-name]
+   git merge main
+   
+   # Create pull request or merge to main
+   git checkout main
+   git merge feature/[epic-name]
+   git push origin main
+   ```
+
+#### Commit Message Convention
+- **feat**: New feature implementation
+- **fix**: Bug fixes
+- **docs**: Documentation updates
+- **style**: Code formatting, no functional changes
+- **refactor**: Code refactoring without feature changes
+- **test**: Adding or updating tests
+- **chore**: Build process, dependency updates
+
+#### Current Branch Status
+
+**Completed and Pushed:**
+- `main`: Initial foundation and completed Week 1 implementation
+- `feature/week1-project-structure`: Complete Week 1 implementation
+  - Project setup and core architecture
+  - TypeScript configuration
+  - Design system foundations
+  - Build and deployment configuration
+- `feature/week2-database-implementation`: Complete Week 2 implementation
+  - SQLite database with encryption
+  - Core database schema
+  - Database abstraction layer
+  - Backup and restore functionality
+
+#### Upcoming Feature Branches
+- `feature/week3-media-library-integration`: Week 3 media scanning implementation
+- `feature/week4-state-management-testing`: Week 4 state management and testing
+- `feature/timeline-core-experience`: Epic 2 timeline implementation
+- `feature/performance-optimization`: Epic 3 performance enhancements
+- `feature/map-integration`: Epic 4 geographic intelligence
+- `feature/ux-enhancement`: Epic 5 user experience improvements
+- `feature/advanced-management`: Epic 6 power user features
+- `feature/polish-production`: Epic 7 final polish and deployment
+
+### Development Environment
+- **Working Directory**: `/Users/heathsanders/Desktop/Dev/chronomap`
+- **Platform**: macOS (Darwin 24.6.0)
+- **Git Status**: Clean working tree
+- **Remote Tracking**: All branches configured for remote tracking
+
+### Pull Request Workflow
+When creating pull requests for major features:
+1. Ensure all tests pass
+2. Update documentation as needed
+3. Include performance impact assessment
+4. Verify privacy compliance
+5. Test on both iOS and Android platforms
+
+### Release Management
+- Major releases tagged with semantic versioning (v1.0.0, v1.1.0, etc.)
+- Release branches for final testing and preparation
+- Automated changelog generation from commit messages
+- App Store deployment through release branches
+
+This Git workflow ensures proper version control, collaboration readiness, and maintains development history throughout the ChronoMap development process.
