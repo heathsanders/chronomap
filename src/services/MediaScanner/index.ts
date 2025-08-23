@@ -182,11 +182,7 @@ export class MediaScanner {
 
         // Get detailed asset info with location data for each asset
         const assetInfos = await Promise.all(
-          result.assets.map(async (asset) => {
-            const info = await MediaLibrary.getAssetInfoAsync(asset.id);
-            console.log(`MediaScanner: Asset ${asset.filename} - uri: ${info.uri}, localUri: ${info.localUri}`);
-            return info;
-          })
+          result.assets.map(asset => MediaLibrary.getAssetInfoAsync(asset.id))
         );
 
         // Convert MediaLibrary assets to our PhotoAsset format, filtering out non-photo/video types
@@ -204,7 +200,7 @@ export class MediaScanner {
             modificationTime: asset.modificationTime,
             mediaType: asset.mediaType,
             mediaSubtypes: asset.mediaSubtypes,
-            albumId: asset.albumId,
+            albumId: asset.albumId || 'default', // Use actual albumId or fallback
             duration: asset.duration,
             location: asset.location ? {
               latitude: asset.location.latitude,
@@ -285,11 +281,7 @@ export class MediaScanner {
         const assetInfos = await Promise.all(
           result.assets
             .filter(asset => asset.creationTime > lastScanDate.getTime())
-            .map(async (asset) => {
-              const info = await MediaLibrary.getAssetInfoAsync(asset.id);
-              console.log(`MediaScanner (incremental): Asset ${asset.filename} - uri: ${info.uri}, localUri: ${info.localUri}`);
-              return info;
-            })
+            .map(asset => MediaLibrary.getAssetInfoAsync(asset.id))
         );
 
         // Convert to PhotoAsset format, filtering out non-photo/video types
@@ -307,7 +299,7 @@ export class MediaScanner {
             modificationTime: asset.modificationTime,
             mediaType: asset.mediaType,
             mediaSubtypes: asset.mediaSubtypes,
-            albumId: asset.albumId,
+            albumId: asset.albumId || 'default', // Use actual albumId or fallback
             duration: asset.duration,
             location: asset.location ? {
               latitude: asset.location.latitude,

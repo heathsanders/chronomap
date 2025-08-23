@@ -28,12 +28,10 @@ export async function loadPhotosFromDatabase(): Promise<PhotoAsset[]> {
         
         // If we have a ph:// URI, try to get the localUri for display
         if (dbPhoto.filePath.startsWith('ph://')) {
-          console.log(`Converting ph:// URI for ${dbPhoto.filename}`);
           try {
             const MediaLibrary = await import('expo-media-library');
             const assetInfo = await MediaLibrary.getAssetInfoAsync(dbPhoto.assetId);
             displayUri = assetInfo.localUri || assetInfo.uri || dbPhoto.filePath;
-            console.log(`Converted ${dbPhoto.filename}: ${dbPhoto.filePath} -> ${displayUri}`);
           } catch (error) {
             console.warn(`Failed to convert ph:// URI for ${dbPhoto.filename}:`, error);
             // Fall back to original URI
@@ -50,7 +48,7 @@ export async function loadPhotosFromDatabase(): Promise<PhotoAsset[]> {
           modificationTime: dbPhoto.modifiedAt.getTime(),
           mediaType: dbPhoto.mimeType.startsWith('image/') ? 'photo' : 'video' as 'photo' | 'video',
           mediaSubtypes: [],
-          albumId: dbPhoto.assetId,
+          albumId: 'default', // Will be populated when we add album support
           duration: undefined, // Could be populated from EXIF if available
           location: dbPhoto.location
         };

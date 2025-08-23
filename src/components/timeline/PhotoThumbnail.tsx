@@ -69,15 +69,12 @@ export const PhotoThumbnail: React.FC<PhotoThumbnailProps> = ({
 
   // Generate thumbnail URI - warn if still using ph:// URLs
   const thumbnailUri = useMemo(() => {
-    console.log(`PhotoThumbnail: Processing photo ${photo.filename}, uri: ${photo.uri}`);
-    
     // Warn if we still have ph:// URLs (should have been converted to localUri)
     if (photo.uri.startsWith('ph://')) {
       console.warn(`PhotoThumbnail: Still using ph:// URI for ${photo.filename}: ${photo.uri}`);
       console.warn('This will likely fail to load. URI should have been converted to localUri during photo loading.');
     }
     
-    console.log(`PhotoThumbnail: Using URI: ${photo.uri}`);
     return photo.uri;
   }, [photo.uri, photo.filename]);
 
@@ -85,31 +82,33 @@ export const PhotoThumbnail: React.FC<PhotoThumbnailProps> = ({
 
   // Handle image loading states
   const handleLoadStart = useCallback(() => {
-    console.log(`PhotoThumbnail: Load start for ${photo.filename}`);
     setThumbnailState(prev => ({
       ...prev,
       isLoading: true,
       hasError: false,
     }));
-  }, [photo.filename]);
+  }, []);
 
   const handleLoadEnd = useCallback(() => {
-    console.log(`PhotoThumbnail: Load end for ${photo.filename}`);
     setThumbnailState(prev => ({
       ...prev,
       isLoading: false,
       isLoaded: true,
     }));
-  }, [photo.filename]);
+  }, []);
 
-  const handleError = useCallback(() => {
+  const handleError = useCallback((error: any) => {
+    console.warn(`PhotoThumbnail: Load error for ${photo.filename}:`, error?.nativeEvent || error);
+    if (photo.mediaType === 'video') {
+      console.warn('This is a video file. Videos may require special thumbnail handling.');
+    }
     setThumbnailState(prev => ({
       ...prev,
       isLoading: false,
       hasError: true,
       isLoaded: false,
     }));
-  }, []);
+  }, [photo.filename, photo.mediaType]);
 
   // Handle press events with haptic feedback
   const handlePress = useCallback(() => {
