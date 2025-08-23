@@ -73,21 +73,26 @@ export const PhotoGrid: React.FC<PhotoGridProps> = ({
 
   // Prepare grid data with skeletons during loading
   const gridData = useMemo<GridItem[]>(() => {
+    // Debug logging to understand skeleton behavior
+    console.log(`PhotoGrid: isLoading=${isLoading}, photos.length=${photos.length}, useSimpleLayout=${useSimpleLayout}`);
+    
     if (isLoading && photos.length === 0) {
       // Show skeleton items during initial load
       const skeletonCount = 20; // Show 20 skeleton items
+      console.log(`PhotoGrid: Showing ${skeletonCount} skeleton items`);
       return Array.from({ length: skeletonCount }, (_, index) => ({
         type: 'skeleton' as const,
         id: `skeleton-${index}`,
       }));
     }
 
+    console.log(`PhotoGrid: Showing ${photos.length} actual photos`);
     return photos.map(photo => ({
       type: 'photo' as const,
       photo,
       id: photo.id,
     }));
-  }, [photos, isLoading]);
+  }, [photos, isLoading, useSimpleLayout]);
 
   // Handle photo selection
   const handlePhotoPress = useCallback((photo: PhotoAsset) => {
@@ -245,6 +250,15 @@ export const PhotoGrid: React.FC<PhotoGridProps> = ({
 
   // Simple layout for nested contexts (avoids FlashList nesting issues)
   if (useSimpleLayout) {
+    console.log(`PhotoGrid: Using simple layout with ${photos.length} photos`);
+    if (photos.length > 0) {
+      console.log(`PhotoGrid: First photo in simple layout:`, JSON.stringify({
+        id: photos[0].id,
+        filename: photos[0].filename,
+        uri: photos[0].uri
+      }));
+    }
+    
     return (
       <View style={styles.container} testID={testID}>
         <View style={[styles.simpleGrid, { gap: itemSpacing }]}>

@@ -69,35 +69,41 @@ export const PhotoThumbnail: React.FC<PhotoThumbnailProps> = ({
 
   // Generate thumbnail URI - use original URI directly for ph:// URLs
   const thumbnailUri = useMemo(() => {
+    console.log(`PhotoThumbnail: Processing photo ${photo.filename}, uri: ${photo.uri}`);
+    
     // React Native can handle ph:// URLs directly, but not with query parameters
     // For iOS Photos framework URLs (ph://), use the original URI
     if (photo.uri.startsWith('ph://')) {
+      console.log(`PhotoThumbnail: Using ph:// URI directly: ${photo.uri}`);
       return photo.uri;
     }
     
     // For other URI schemes, we could add size parameters
     // But for now, use original URI for maximum compatibility
+    console.log(`PhotoThumbnail: Using original URI: ${photo.uri}`);
     return photo.uri;
-  }, [photo.uri]);
+  }, [photo.uri, photo.filename]);
 
   // Image priority is handled by React Native internally
 
   // Handle image loading states
   const handleLoadStart = useCallback(() => {
+    console.log(`PhotoThumbnail: Load start for ${photo.filename}`);
     setThumbnailState(prev => ({
       ...prev,
       isLoading: true,
       hasError: false,
     }));
-  }, []);
+  }, [photo.filename]);
 
   const handleLoadEnd = useCallback(() => {
+    console.log(`PhotoThumbnail: Load end for ${photo.filename}`);
     setThumbnailState(prev => ({
       ...prev,
       isLoading: false,
       isLoaded: true,
     }));
-  }, []);
+  }, [photo.filename]);
 
   const handleError = useCallback(() => {
     setThumbnailState(prev => ({

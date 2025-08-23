@@ -85,6 +85,7 @@ export function useTimeline(options: UseTimelineOptions = {}): UseTimelineReturn
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isPreloading, setIsPreloading] = useState(false);
   const [error, setError] = useState<AppError | null>(null);
+  const [timelineInitialized, setTimelineInitialized] = useState(false);
   
   // Refs for optimization
   const lastPhotosHash = useRef<string>('');
@@ -102,6 +103,7 @@ export function useTimeline(options: UseTimelineOptions = {}): UseTimelineReturn
         preloadSections: config.enablePreloading ? 3 : 0
       });
       isInitialized.current = true;
+      setTimelineInitialized(true);
     } catch (err) {
       const error: AppError = {
         code: 'UNKNOWN_ERROR',
@@ -350,9 +352,20 @@ export function useTimeline(options: UseTimelineOptions = {}): UseTimelineReturn
     console.log(`useTimeline: allPhotos.length = ${allPhotos.length}, isInitialized = ${isInitialized.current}`);
     if (isInitialized.current && allPhotos.length > 0) {
       console.log('useTimeline: Generating sections from photos');
-      generateSections(allPhotos);
+      generateSections(allPhotos, currentGrouping.current, true); // Force refresh on photos change
     }
   }, [allPhotos, generateSections]);
+
+  /**
+   * Generate sections when initialization completes and we have photos
+   */
+  useEffect(() => {
+    console.log(`useTimeline: Initialization effect - timelineInitialized = ${timelineInitialized}, photos = ${allPhotos.length}, sections = ${sections.length}`);
+    if (timelineInitialized && allPhotos.length > 0 && sections.length === 0) {
+      console.log('useTimeline: Generating sections after initialization');
+      generateSections(allPhotos, currentGrouping.current, true); // Force refresh after init
+    }
+  }, [timelineInitialized, allPhotos.length, sections.length, generateSections]);
 
   /**
    * Sync current position from TimelineEngine
