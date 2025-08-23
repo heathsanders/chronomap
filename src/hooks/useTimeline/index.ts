@@ -105,13 +105,13 @@ export function useTimeline(options: UseTimelineOptions = {}): UseTimelineReturn
       isInitialized.current = true;
       setTimelineInitialized(true);
     } catch (err) {
-      const error: AppError = {
+      const initError: AppError = {
         code: 'UNKNOWN_ERROR',
         message: `Timeline initialization failed: ${err instanceof Error ? err.message : String(err)}`,
         timestamp: new Date()
       };
-      setError(error);
-      setStoreError(error);
+      setError(initError);
+      setStoreError(initError);
     }
   }, [config.grouping, config.sliceSize, config.enablePreloading, setStoreError]);
 
@@ -166,13 +166,13 @@ export function useTimeline(options: UseTimelineOptions = {}): UseTimelineReturn
       console.log(`Timeline generated: ${newSections.length} sections, ${newMetrics.totalPhotos} photos, date range: ${newMetrics.dateRange.start.toLocaleDateString()} - ${newMetrics.dateRange.end.toLocaleDateString()}`);
       
     } catch (err) {
-      const error: AppError = {
+      const genError: AppError = {
         code: 'UNKNOWN_ERROR',
         message: `Timeline generation failed: ${err instanceof Error ? err.message : String(err)}`,
         timestamp: new Date()
       };
-      setError(error);
-      setStoreError(error);
+      setError(genError);
+      setStoreError(genError);
     } finally {
       setIsLoading(false);
     }
@@ -226,10 +226,10 @@ export function useTimeline(options: UseTimelineOptions = {}): UseTimelineReturn
   const getPhotosForDateRange = useCallback(async (
     start: Date, 
     end: Date, 
-    options?: { limit?: number; offset?: number }
+    queryOptions?: { limit?: number; offset?: number }
   ): Promise<PhotoAsset[]> => {
     try {
-      return await TimelineEngine.getPhotosForDateRange(start, end, options);
+      return await TimelineEngine.getPhotosForDateRange(start, end, queryOptions);
     } catch (err) {
       console.error('Failed to get photos for date range:', err);
       return [];

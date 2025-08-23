@@ -3,7 +3,7 @@
  * Main screen displaying photos organized by timeline using TimelineEngine
  */
 
-import React, { useCallback, useRef } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -11,15 +11,18 @@ import {
   ActivityIndicator,
   RefreshControl,
   ScrollView,
+  TouchableOpacity,
+  Animated,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { FlashList } from '@shopify/flash-list';
 import { StackNavigationProp } from '@react-navigation/stack';
 
-import { RootStackParamList, DateSection, TimelinePosition } from '@/types';
+import { RootStackParamList, DateSection, TimelinePosition, TimelineGrouping } from '@/types';
 import { colors } from '@/config/colors';
 import { spacing } from '@/config/spacing';
-import { PhotoGrid } from '@/components/timeline';
+import { typography } from '@/config/typography';
+import { PhotoGrid, DateSectionHeader, DateNavigator } from '@/components/timeline';
 import { useTimeline } from '@/hooks/useTimeline';
 import { initializePhotosOnStartup, refreshPhotosInStore } from '@/utils/photoLoader';
 
@@ -29,6 +32,12 @@ type TimelineScreenProps = {
 
 export default function TimelineScreen({ navigation }: TimelineScreenProps) {
   const flashListRef = useRef<FlashList<DateSection>>(null);
+  const scrollY = useRef(new Animated.Value(0)).current;
+  
+  // Local state
+  const [currentGrouping, setCurrentGrouping] = useState<TimelineGrouping>('daily');
+  const [showDateNavigator, setShowDateNavigator] = useState(false);
+  // const [stickyHeaderIndex, setStickyHeaderIndex] = useState<number>(-1);
 
   // Use the timeline hook for enhanced timeline functionality
   const {
@@ -42,7 +51,7 @@ export default function TimelineScreen({ navigation }: TimelineScreenProps) {
     scrollToDate,
     changeGrouping
   } = useTimeline({
-    grouping: 'daily',
+    grouping: currentGrouping,
     enablePreloading: true,
     cacheEnabled: true,
     sliceSize: 50
@@ -60,6 +69,45 @@ export default function TimelineScreen({ navigation }: TimelineScreenProps) {
     
     initializePhotos();
   }, []);
+
+  /**
+   * Handle grouping changes
+   */
+  const handleGroupingChange = useCallback(async (grouping: TimelineGrouping) => {
+    if (grouping !== currentGrouping) {
+      setCurrentGrouping(grouping);
+      await changeGrouping(grouping);
+    }
+  }, [currentGrouping, changeGrouping]);
+
+  /**
+   * Handle date navigation
+   */
+  const handleDateSelect = useCallback(async (date: Date) => {
+    const position = await scrollToDate(date);
+    if (position && flashListRef.current) {
+      // Scroll to the calculated position
+      flashListRef.current.scrollToOffset({ 
+        offset: position.scrollOffset, 
+        animated: true 
+      });
+    }
+    setShowDateNavigator(false);
+  }, [scrollToDate]);
+
+  /**
+   * Handle section header press for expansion/collapse
+   */
+  const handleSectionHeaderPress = useCallback((section: DateSection) => {
+    // For now, just scroll to the section
+    const sectionIndex = sections.findIndex(s => s.date === section.date);
+    if (sectionIndex >= 0 && flashListRef.current) {
+      flashListRef.current.scrollToIndex({ 
+        index: sectionIndex, 
+        animated: true 
+      });
+    }
+  }, [sections]);
 
   /**
    * Handle photo press with navigation
@@ -84,10 +132,13 @@ export default function TimelineScreen({ navigation }: TimelineScreenProps) {
   }, [refreshTimeline]);
 
   /**
-   * Handle scroll position changes for position tracking
+   * Handle scroll position changes for position tracking and sticky headers
    */
   const handleScroll = useCallback((event: any) => {
     const { contentOffset } = event.nativeEvent;
+    
+    // Update animated value for scroll effects
+    scrollY.setValue(contentOffset.y);
     
     // Update position tracking (simplified - in production would calculate exact section/photo)
     const position: TimelinePosition = {
@@ -99,7 +150,7 @@ export default function TimelineScreen({ navigation }: TimelineScreenProps) {
     };
     
     updatePosition(position);
-  }, [updatePosition]);
+  }, [updatePosition, scrollY]);
 
   /**
    * Render empty state when no photos
@@ -148,31 +199,78 @@ export default function TimelineScreen({ navigation }: TimelineScreenProps) {
   ), [error]);
 
   /**
-   * Render timeline header with metrics
+   * Render enhanced timeline header with navigation and grouping controls
    */
   const renderHeader = useCallback(() => (
     <View style={styles.headerContainer}>
-      <Text style={styles.headerTitle}>Your Timeline</Text>
-      <Text style={styles.headerSubtitle}>
-        {metrics?.totalPhotos || 0} photos in {metrics?.totalSections || 0} days
-      </Text>
-      {metrics?.dateRange && (
-        <Text style={styles.dateRangeText}>
-          {metrics.dateRange.start.toLocaleDateString()} - {metrics.dateRange.end.toLocaleDateString()}
-        </Text>
-      )}
+      <View style={styles.titleRow}>
+        <View style={styles.titleContainer}>
+          <Text style={styles.headerTitle}>Your Timeline</Text>
+          <Text style={styles.headerSubtitle}>
+            {metrics?.totalPhotos || 0} photos in {metrics?.totalSections || 0} {
+              currentGrouping === 'daily' ? 'days' : 
+              currentGrouping === 'weekly' ? 'weeks' : 
+              currentGrouping === 'monthly' ? 'months' : 'years'
+            }
+          </Text>
+          {metrics?.dateRange && (
+            <Text style={styles.dateRangeText}>
+              {metrics.dateRange.start.toLocaleDateString()} - {metrics.dateRange.end.toLocaleDateString()}
+            </Text>
+          )}
+        </View>
+        
+        <TouchableOpacity
+          style={styles.navigateButton}
+          onPress={() => setShowDateNavigator(true)}
+          accessibilityRole="button"
+          accessibilityLabel="Open date navigator"
+        >
+          <Text style={styles.navigateButtonText}>📅</Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* Grouping Controls */}
+      <View style={styles.groupingContainer}>
+        <Text style={styles.groupingLabel}>View by:</Text>
+        <View style={styles.groupingButtons}>
+          {(['daily', 'weekly', 'monthly'] as TimelineGrouping[]).map((grouping) => (
+            <TouchableOpacity
+              key={grouping}
+              style={[
+                styles.groupingButton,
+                currentGrouping === grouping && styles.groupingButtonActive
+              ]}
+              onPress={() => handleGroupingChange(grouping)}
+              accessibilityRole="button"
+              accessibilityLabel={`${grouping} grouping`}
+              accessibilityState={{ selected: currentGrouping === grouping }}
+            >
+              <Text style={[
+                styles.groupingButtonText,
+                currentGrouping === grouping && styles.groupingButtonTextActive
+              ]}>
+                {grouping.charAt(0).toUpperCase() + grouping.slice(1)}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      </View>
     </View>
-  ), [metrics]);
+  ), [metrics, currentGrouping, handleGroupingChange]);
 
   /**
-   * Render individual timeline section
+   * Render individual timeline section with enhanced header
    */
   const renderSection = useCallback(({ item: section, index }: { item: DateSection; index: number }) => (
     <View style={styles.dateSection} key={`section-${section.date}-${index}`}>
-      <View style={styles.sectionHeader}>
-        <Text style={styles.dateHeader}>{section.displayDate}</Text>
-        <Text style={styles.photoCount}>{section.count} photos</Text>
-      </View>
+      <DateSectionHeader
+        section={section}
+        currentGrouping={currentGrouping}
+        showPhotoCount={true}
+        onHeaderPress={handleSectionHeaderPress}
+        testID={`section-header-${index}`}
+      />
       <PhotoGrid
         photos={section.photos}
         onPhotoPress={handlePhotoPress}
@@ -180,7 +278,7 @@ export default function TimelineScreen({ navigation }: TimelineScreenProps) {
         useSimpleLayout={true}
       />
     </View>
-  ), [handlePhotoPress]);
+  ), [handlePhotoPress, currentGrouping, handleSectionHeaderPress]);
 
   /**
    * Render main timeline content
@@ -236,6 +334,17 @@ export default function TimelineScreen({ navigation }: TimelineScreenProps) {
   return (
     <SafeAreaView style={styles.container}>
       {renderTimeline()}
+      
+      {/* Date Navigator Modal */}
+      <DateNavigator
+        visible={showDateNavigator}
+        sections={sections}
+        metrics={metrics}
+        currentDate={new Date()}
+        onDateSelect={handleDateSelect}
+        onClose={() => setShowDateNavigator(false)}
+        testID="date-navigator"
+      />
     </SafeAreaView>
   );
 }
@@ -253,45 +362,80 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
   },
+  titleRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: spacing.md,
+  },
+  titleContainer: {
+    flex: 1,
+  },
   headerTitle: {
-    fontSize: 24,
+    ...typography.styles.h2,
     fontWeight: 'bold',
     color: colors.text,
     marginBottom: spacing.xs,
   },
   headerSubtitle: {
-    fontSize: 14,
+    ...typography.styles.body,
     color: colors.textSecondary,
     marginBottom: spacing.xs,
   },
   dateRangeText: {
-    fontSize: 12,
+    ...typography.styles.caption,
     color: colors.textTertiary,
     fontStyle: 'italic',
   },
-  dateSection: {
-    marginBottom: spacing.md,
-  },
-  sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+  navigateButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: colors.primary[100],
+    justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.sm,
-    backgroundColor: colors.surface,
-    borderRadius: 8,
-    marginHorizontal: spacing.md,
-    marginBottom: spacing.sm,
+    marginLeft: spacing.md,
   },
-  dateHeader: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: colors.text,
+  navigateButtonText: {
+    fontSize: 20,
   },
-  photoCount: {
-    fontSize: 12,
+  groupingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  groupingLabel: {
+    ...typography.styles.caption,
     color: colors.textSecondary,
     fontWeight: '500',
+  },
+  groupingButtons: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+  },
+  groupingButton: {
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    backgroundColor: colors.surface,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  groupingButtonActive: {
+    backgroundColor: colors.primary[500],
+    borderColor: colors.primary[500],
+  },
+  groupingButtonText: {
+    ...typography.styles.caption,
+    fontWeight: '500',
+    color: colors.textSecondary,
+  },
+  groupingButtonTextActive: {
+    color: colors.white,
+    fontWeight: '600',
+  },
+  dateSection: {
+    marginBottom: spacing.sm,
   },
   listContent: {
     paddingBottom: spacing.xl,
