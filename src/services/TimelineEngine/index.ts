@@ -94,6 +94,13 @@ class TimelineEngineService {
    */
   private groupPhotosByDate(photos: PhotoAsset[], grouping: TimelineGrouping): DateSection[] {
     const groups = new Map<string, PhotoAsset[]>();
+    
+    console.log(`TimelineEngine: Grouping ${photos.length} photos by ${grouping}`);
+    if (photos.length > 0) {
+      const samplePhoto = photos[0];
+      const sampleDate = new Date(samplePhoto.creationTime);
+      console.log(`TimelineEngine: Sample photo ${samplePhoto.filename} date: ${sampleDate.toLocaleDateString()} (timestamp: ${samplePhoto.creationTime})`);
+    }
 
     photos.forEach(photo => {
       const date = new Date(photo.creationTime);
@@ -104,6 +111,8 @@ class TimelineEngineService {
       }
       groups.get(dateKey)!.push(photo);
     });
+    
+    console.log(`TimelineEngine: Created ${groups.size} date groups`);
 
     // Convert to DateSection array with enhanced metadata
     const sections = Array.from(groups.entries()).map(([dateKey, sectionPhotos]) => {
@@ -121,7 +130,17 @@ class TimelineEngineService {
     });
 
     // Sort sections by date (newest first)
-    return sections.sort((a, b) => b.startDate.getTime() - a.startDate.getTime());
+    const sortedSections = sections.sort((a, b) => b.startDate.getTime() - a.startDate.getTime());
+    
+    console.log(`TimelineEngine: Generated ${sortedSections.length} sections:`);
+    sortedSections.slice(0, 3).forEach((section, index) => {
+      console.log(`  Section ${index + 1}: ${section.displayDate} (${section.count} photos)`);
+    });
+    if (sortedSections.length > 3) {
+      console.log(`  ... and ${sortedSections.length - 3} more sections`);
+    }
+    
+    return sortedSections;
   }
 
   /**

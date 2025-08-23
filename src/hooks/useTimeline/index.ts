@@ -143,46 +143,7 @@ export function useTimeline(options: UseTimelineOptions = {}): UseTimelineReturn
     setError(null);
 
     try {
-      console.log('generateSections: About to call TimelineEngine.generateTimelineSections');
-      
-      // Try a simple fallback first to test
-      if (photos.length > 0) {
-        console.log('generateSections: Creating simple fallback sections');
-        
-        // Create a simple test section
-        const testSection: DateSection = {
-          date: '2024-01-01',
-          displayDate: 'Test Section - Recent Photos',
-          photos: photos.slice(0, Math.min(10, photos.length)), // Just first 10 photos
-          count: Math.min(10, photos.length),
-          startDate: new Date('2024-01-01'),
-          endDate: new Date('2024-01-01'),
-          grouping: grouping
-        };
-        
-        const testMetrics: TimelineMetrics = {
-          totalPhotos: photos.length,
-          totalSections: 1,
-          averagePhotosPerSection: photos.length,
-          dateRange: {
-            start: new Date(Math.min(...photos.map(p => p.creationTime))),
-            end: new Date(Math.max(...photos.map(p => p.creationTime)))
-          },
-          cacheSize: 0,
-          memoryUsage: photos.length * 1024 // Rough estimate
-        };
-        
-        console.log('generateSections: Setting test section and metrics');
-        setSections([testSection]);
-        setMetrics(testMetrics);
-        setSlices([]);
-        
-        lastPhotosHash.current = photosHash;
-        currentGrouping.current = grouping;
-        
-        console.log(`Timeline generated (fallback): 1 test section, ${photos.length} total photos`);
-        return;
-      }
+      console.log(`generateSections: Generating timeline sections for ${photos.length} photos with ${grouping} grouping`);
       
       // Generate sections using TimelineEngine
       const newSections = await TimelineEngine.generateTimelineSections(photos, grouping);
@@ -202,7 +163,7 @@ export function useTimeline(options: UseTimelineOptions = {}): UseTimelineReturn
       lastPhotosHash.current = photosHash;
       currentGrouping.current = grouping;
       
-      console.log(`Timeline generated: ${newSections.length} sections, ${newMetrics.totalPhotos} photos`);
+      console.log(`Timeline generated: ${newSections.length} sections, ${newMetrics.totalPhotos} photos, date range: ${newMetrics.dateRange.start.toLocaleDateString()} - ${newMetrics.dateRange.end.toLocaleDateString()}`);
       
     } catch (err) {
       const error: AppError = {
