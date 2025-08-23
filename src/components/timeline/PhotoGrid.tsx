@@ -4,7 +4,7 @@
  * Supports virtualization, progressive loading, and smooth scrolling
  */
 
-import React, { useCallback, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useMemo, useRef, useState, useEffect } from 'react';
 import {
   View,
   StyleSheet,
@@ -54,6 +54,8 @@ export const PhotoGrid: React.FC<PhotoGridProps> = ({
 }) => {
   const flashListRef = useRef<FlashList<GridItem>>(null);
   const [scrollPosition, setScrollPosition] = useState(0);
+  const [visibleRange, setVisibleRange] = useState({ start: 0, end: 0 });
+  const [memoryPressure, setMemoryPressure] = useState(false);
   
   // State from stores
   const { 
@@ -130,7 +132,10 @@ export const PhotoGrid: React.FC<PhotoGridProps> = ({
           onLongPress={handlePhotoLongPress}
           isSelected={isSelected}
           showOverlay={showOverlay}
-          priority={index < 20 ? 'high' : 'normal'} // High priority for first 20 items
+          priority={
+            index < 20 ? 'high' : 
+            (index >= visibleRange.start - 10 && index <= visibleRange.end + 10) ? 'normal' : 'low'
+          }
           testID={`photo-thumbnail-${item.photo.id}`}
         />
       );
@@ -144,6 +149,7 @@ export const PhotoGrid: React.FC<PhotoGridProps> = ({
     handlePhotoPress,
     handlePhotoLongPress,
     showOverlay,
+    visibleRange,
   ]);
 
   // Key extractor for FlashList
@@ -159,6 +165,33 @@ export const PhotoGrid: React.FC<PhotoGridProps> = ({
     const currentOffset = event.nativeEvent.contentOffset.y;
     setScrollPosition(currentOffset);
   }, []);
+
+  // Handle viewability changes for intelligent preloading
+  const handleViewableItemsChanged = useCallback(({ viewableItems }: any) => {
+    if (viewableItems.length > 0) {
+      const start = viewableItems[0].index || 0;
+      const end = viewableItems[viewableItems.length - 1].index || 0;
+      setVisibleRange({ start, end });
+    }
+  }, []);
+
+  const viewabilityConfigCallbackPairs = useRef([
+    {
+      viewabilityConfig: {
+        itemVisiblePercentThreshold: 50,
+        minimumViewTime: 100,
+      },
+      onViewableItemsChanged: handleViewableItemsChanged,
+    },
+  ]);
+
+  // Memory pressure monitoring
+  useEffect(() => {
+    // Simple memory pressure detection based on dataset size
+    const isLargeDataset = photos.length > 10000;
+    const shouldReduceQuality = isLargeDataset && scrollPosition > 0;
+    setMemoryPressure(shouldReduceQuality);
+  }, [photos.length, scrollPosition]);
 
   // Handle scroll to top
   const scrollToTop = useCallback(() => {
@@ -283,8 +316,34 @@ export const PhotoGrid: React.FC<PhotoGridProps> = ({
         ListEmptyComponent={renderEmptyState}
         contentContainerStyle={styles.contentContainer}
         showsVerticalScrollIndicator={true}
-        // Performance optimizations
+        
+        // Advanced Performance Optimizations for Large Datasets
         removeClippedSubviews={true}
+        initialNumToRender={20} // Render initial visible items
+        updateCellsBatchingPeriod={50} // Batch updates for performance
+        
+        // Memory Management
+        getItemLayout={undefined} // Let FlashList handle dynamic sizing
+        overrideItemLayout={(layout, item, index) => {
+          // Dynamic sizing optimization for photos vs skeletons
+          if (item.type === 'skeleton') {
+            layout.size = estimatedItemSize;
+          } else {
+            // Actual photo items might need different sizing
+            layout.size = estimatedItemSize;
+          }
+        }}
+        
+        // Viewport optimization with callback pairs
+        viewabilityConfigCallbackPairs={viewabilityConfigCallbackPairs.current}
+        
+        // Cache optimization for large datasets
+        recycleItems={true} // Enable item recycling for memory efficiency
+        
+        // Dynamic performance adjustments based on memory pressure
+        windowSize={memoryPressure ? 5 : 10}
+        maxToRenderPerBatch={memoryPressure ? 5 : 10}
+        
         // Accessibility
         accessible={true}
         accessibilityLabel={`Photo grid with ${photos.length} photos`}
