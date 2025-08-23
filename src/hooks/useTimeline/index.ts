@@ -121,7 +121,10 @@ export function useTimeline(options: UseTimelineOptions = {}): UseTimelineReturn
     grouping: TimelineGrouping = currentGrouping.current,
     forceRefresh = false
   ) => {
+    console.log(`generateSections: Called with ${photos.length} photos, grouping: ${grouping}, forceRefresh: ${forceRefresh}`);
+    
     if (photos.length === 0) {
+      console.log('generateSections: No photos, clearing sections');
       setSections([]);
       setSlices([]);
       setMetrics(null);
@@ -303,7 +306,9 @@ export function useTimeline(options: UseTimelineOptions = {}): UseTimelineReturn
    * Generate sections when photos change
    */
   useEffect(() => {
+    console.log(`useTimeline: allPhotos.length = ${allPhotos.length}, isInitialized = ${isInitialized.current}`);
     if (isInitialized.current && allPhotos.length > 0) {
+      console.log('useTimeline: Generating sections from photos');
       generateSections(allPhotos);
     }
   }, [allPhotos, generateSections]);

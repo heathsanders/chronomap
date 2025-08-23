@@ -38,6 +38,9 @@ export async function loadPhotosFromDatabase(): Promise<PhotoAsset[]> {
     }));
 
     console.log(`Loaded ${storePhotos.length} photos from database`);
+    if (storePhotos.length > 0) {
+      console.log('Sample photo data:', JSON.stringify(storePhotos[0], null, 2));
+    }
     return storePhotos;
 
   } catch (error) {
@@ -58,6 +61,18 @@ export async function refreshPhotosInStore(): Promise<void> {
     setPhotos(storePhotos);
     
     console.log(`Updated PhotoStore with ${storePhotos.length} photos`);
+    
+    // Debug: Check if photos are actually in the store
+    const { allPhotos } = usePhotoStore.getState();
+    console.log(`PhotoStore now contains ${allPhotos.length} photos`);
+    if (allPhotos.length > 0) {
+      console.log('Sample store photo:', JSON.stringify({
+        id: allPhotos[0].id,
+        filename: allPhotos[0].filename,
+        creationTime: allPhotos[0].creationTime,
+        mediaType: allPhotos[0].mediaType
+      }));
+    }
   } catch (error) {
     console.error('Error refreshing photos in store:', error);
   }

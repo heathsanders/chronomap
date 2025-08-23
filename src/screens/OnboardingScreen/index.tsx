@@ -61,6 +61,10 @@ export default function OnboardingScreen({ navigation }: OnboardingScreenProps) 
           console.log(`Cleaned up ${duplicatesRemoved} duplicate photos`);
         }
       }
+
+      // Check current photo count in database
+      const currentPhotoCount = await DatabaseService.getPhotoCount(false);
+      console.log(`Current photos in database: ${currentPhotoCount}`);
     } catch (error) {
       console.error('Database initialization failed:', error);
       setState(prev => ({
@@ -132,29 +136,40 @@ export default function OnboardingScreen({ navigation }: OnboardingScreenProps) 
 
       console.log(`Scanned ${photoAssets.length} photos successfully`);
 
-      // Store photos in database
-      for (const asset of photoAssets) {
-        try {
-          const photoMetadata = {
-            assetId: asset.id,
-            filePath: asset.uri,
-            filename: asset.filename,
-            fileSize: 0, // Will be populated later if needed
-            mimeType: asset.mediaType === 'photo' ? 'image/jpeg' : 'video/mp4',
-            width: asset.width,
-            height: asset.height,
-            createdAt: new Date(asset.creationTime),
-            modifiedAt: new Date(asset.modificationTime),
-            scannedAt: new Date(),
-            isDeleted: false,
-            location: asset.location
-          };
+      // Check if database already has photos to avoid re-scanning
+      const existingPhotoCount = await DatabaseService.getPhotoCount(false);
+      if (existingPhotoCount > 0) {
+        console.log(`Database already contains ${existingPhotoCount} photos, skipping insert`);
+      } else {
+        console.log('Storing photos in database...');
+        
+        // Store photos in database
+        for (const asset of photoAssets) {
+          try {
+            const photoMetadata = {
+              assetId: asset.id,
+              filePath: asset.uri,
+              filename: asset.filename,
+              fileSize: 0, // Will be populated later if needed
+              mimeType: asset.mediaType === 'photo' ? 'image/jpeg' : 'video/mp4',
+              width: asset.width,
+              height: asset.height,
+              createdAt: new Date(asset.creationTime),
+              modifiedAt: new Date(asset.modificationTime),
+              scannedAt: new Date(),
+              isDeleted: false,
+              location: asset.location
+            };
 
-          await DatabaseService.insertOrUpdatePhoto(photoMetadata);
-        } catch (dbError) {
-          console.error('Error storing photo metadata:', dbError);
-          // Continue with other photos even if one fails
+            await DatabaseService.insertOrUpdatePhoto(photoMetadata);
+          } catch (dbError) {
+            console.error('Error storing photo metadata:', dbError);
+            // Continue with other photos even if one fails
+          }
         }
+        
+        const finalPhotoCount = await DatabaseService.getPhotoCount(false);
+        console.log(`Stored ${finalPhotoCount} photos in database`);
       }
 
       // Load photos from database into store

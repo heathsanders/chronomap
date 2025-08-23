@@ -105,15 +105,25 @@ export default function TimelineScreen({ navigation }: TimelineScreenProps) {
    * Render empty state when no photos
    */
   const renderEmptyState = useCallback(() => (
-    <View style={styles.emptyContainer}>
+    <ScrollView 
+      contentContainerStyle={styles.emptyContainer}
+      refreshControl={
+        <RefreshControl
+          refreshing={isRefreshing}
+          onRefresh={handleRefresh}
+          colors={[colors.primary]}
+          tintColor={colors.primary}
+        />
+      }
+    >
       <Text style={styles.emptyTitle}>No Photos Found</Text>
       <Text style={styles.emptyDescription}>
         If you just completed photo scanning, pull down to refresh the timeline.
         {'\n\n'}
         If you haven't scanned yet, ChronoMap will automatically scan for photos when you grant permission.
       </Text>
-    </View>
-  ), []);
+    </ScrollView>
+  ), [isRefreshing, handleRefresh]);
 
   /**
    * Render loading state
@@ -303,6 +313,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: spacing.lg,
+    minHeight: 400, // Ensure enough height for pull-to-refresh
   },
   emptyTitle: {
     fontSize: 20,
