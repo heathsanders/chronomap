@@ -15,7 +15,7 @@ const createTestQueryClient = () => {
       queries: {
         retry: false,
         staleTime: Infinity,
-        cacheTime: Infinity, // Updated from gcTime for React Query v4
+        gcTime: Infinity, // Updated to gcTime for React Query v5
       },
       mutations: {
         retry: false,

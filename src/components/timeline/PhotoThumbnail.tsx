@@ -12,8 +12,8 @@ import {
   Text,
   PixelRatio,
   ImageStyle,
+  Image,
 } from 'react-native';
-import FastImage from 'react-native-fast-image';
 import { PhotoAsset } from '@/types';
 import { colors, spacing, typography } from '@/config';
 import { useSettingsStore, useUIStore } from '@/stores';
@@ -67,28 +67,20 @@ export const PhotoThumbnail: React.FC<PhotoThumbnailProps> = ({
     return Math.round(size * clampedRatio);
   }, [size]);
 
-  // Generate thumbnail URI with size optimization
+  // Generate thumbnail URI - use original URI directly for ph:// URLs
   const thumbnailUri = useMemo(() => {
-    // In a real implementation, this would generate optimized thumbnail URIs
-    // For now, use the original URI with size parameters
-    const baseUri = photo.uri;
-    
-    // Expo ImageManipulator or similar could be used to generate thumbnails
-    // This is a placeholder for the actual thumbnail generation logic
-    return `${baseUri}?width=${optimizedSize}&height=${optimizedSize}&quality=80`;
-  }, [photo.uri, optimizedSize]);
-
-  // FastImage priority mapping
-  const imagePriority = useMemo(() => {
-    switch (priority) {
-      case 'high':
-        return FastImage.priority.high;
-      case 'low':
-        return FastImage.priority.low;
-      default:
-        return FastImage.priority.normal;
+    // React Native can handle ph:// URLs directly, but not with query parameters
+    // For iOS Photos framework URLs (ph://), use the original URI
+    if (photo.uri.startsWith('ph://')) {
+      return photo.uri;
     }
-  }, [priority]);
+    
+    // For other URI schemes, we could add size parameters
+    // But for now, use original URI for maximum compatibility
+    return photo.uri;
+  }, [photo.uri]);
+
+  // Image priority is handled by React Native internally
 
   // Handle image loading states
   const handleLoadStart = useCallback(() => {
@@ -193,13 +185,12 @@ export const PhotoThumbnail: React.FC<PhotoThumbnailProps> = ({
       testID={testID}
     >
       {/* Main image */}
-      <FastImage
+      <Image
         source={{
           uri: thumbnailUri,
-          priority: imagePriority,
         }}
         style={styles.image}
-        resizeMode={FastImage.resizeMode.cover}
+        resizeMode="cover"
         onLoadStart={handleLoadStart}
         onLoadEnd={handleLoadEnd}
         onError={handleError}

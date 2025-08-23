@@ -53,7 +53,6 @@ export class DatabaseService {
       // Open encrypted database
       this.database = await SQLite.openDatabaseAsync(this.config.name, {
         enableChangeListener: true,
-        enableCRSQLite: false, // Use standard SQLite for now
         useNewConnection: true
       });
 
@@ -205,6 +204,60 @@ export class DatabaseService {
     } catch (error) {
       console.error('Error inserting photo:', error);
       throw this.createError('DATABASE_ERROR', `Failed to insert photo: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  }
+
+  /**
+   * Insert or update a photo record (handles duplicates gracefully)
+   */
+  async insertOrUpdatePhoto(photo: Omit<PhotoMetadata, 'id'>): Promise<string> {
+    if (!this.database) {
+      throw new Error('Database not initialized');
+    }
+
+    try {
+      // First, check if photo already exists
+      const existingPhoto = await this.database.getFirstAsync(`
+        SELECT id FROM photos WHERE assetId = ?
+      `, [photo.assetId]) as { id: string } | null;
+
+      if (existingPhoto) {
+        // Update existing photo with new scan timestamp
+        await this.database.runAsync(`
+          UPDATE photos SET 
+            filePath = ?, filename = ?, fileSize = ?, mimeType = ?,
+            width = ?, height = ?, createdAt = ?, modifiedAt = ?, 
+            scannedAt = ?, thumbnailPath = ?, checksum = ?
+          WHERE assetId = ?
+        `, [
+          photo.filePath,
+          photo.filename,
+          photo.fileSize,
+          photo.mimeType,
+          photo.width,
+          photo.height,
+          photo.createdAt.toISOString(),
+          photo.modifiedAt.toISOString(),
+          photo.scannedAt.toISOString(),
+          photo.thumbnailPath || null,
+          photo.checksum || null,
+          photo.assetId
+        ]);
+
+        // Update location if provided
+        if (photo.location) {
+          const locationId = await this.insertLocation(photo.location);
+          await this.linkPhotoLocation(existingPhoto.id, locationId);
+        }
+
+        return existingPhoto.id;
+      } else {
+        // Insert new photo
+        return await this.insertPhoto(photo);
+      }
+    } catch (error) {
+      console.error('Error inserting/updating photo:', error);
+      throw this.createError('DATABASE_ERROR', `Failed to insert/update photo: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 
@@ -618,6 +671,58 @@ export class DatabaseService {
    */
   isReady(): boolean {
     return this.isInitialized && this.database !== null;
+  }
+
+  /**
+   * Clear all database data (for development/debugging)
+   */
+  async clearAllData(): Promise<void> {
+    if (!this.database) {
+      throw new Error('Database not initialized');
+    }
+
+    try {
+      // Clear all tables in reverse order to handle foreign keys
+      await this.database.runAsync('DELETE FROM metadata');
+      await this.database.runAsync('DELETE FROM photo_locations');
+      await this.database.runAsync('DELETE FROM locations');
+      await this.database.runAsync('DELETE FROM photos');
+      
+      console.log('Database cleared successfully');
+    } catch (error) {
+      console.error('Error clearing database:', error);
+      throw this.createError('DATABASE_ERROR', `Failed to clear database: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  }
+
+  /**
+   * Remove duplicate photos (same assetId)
+   */
+  async removeDuplicatePhotos(): Promise<number> {
+    if (!this.database) {
+      throw new Error('Database not initialized');
+    }
+
+    try {
+      // Find duplicates and keep only the most recent scan
+      const result = await this.database.runAsync(`
+        DELETE FROM photos 
+        WHERE id NOT IN (
+          SELECT id FROM (
+            SELECT id, assetId, scannedAt,
+            ROW_NUMBER() OVER (PARTITION BY assetId ORDER BY scannedAt DESC) as rn
+            FROM photos
+          ) ranked
+          WHERE rn = 1
+        )
+      `);
+
+      console.log(`Removed ${result.changes} duplicate photos`);
+      return result.changes || 0;
+    } catch (error) {
+      console.error('Error removing duplicates:', error);
+      throw this.createError('DATABASE_ERROR', `Failed to remove duplicates: ${error instanceof Error ? error.message : String(error)}`);
+    }
   }
 }
 

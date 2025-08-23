@@ -157,7 +157,7 @@ export function createQueryClient(): QueryClient {
         staleTime: 5 * 60 * 1000,
         
         // Keep cache for 1 hour
-        cacheTime: 60 * 60 * 1000, // Updated from gcTime for React Query v4
+        gcTime: 60 * 60 * 1000, // Updated to gcTime for React Query v5
         
         // Refetch on window focus for fresh data
         refetchOnWindowFocus: true,

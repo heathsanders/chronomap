@@ -29,6 +29,7 @@ export interface PhotoGridProps {
   itemSpacing?: number;
   showOverlay?: boolean;
   testID?: string;
+  useSimpleLayout?: boolean; // Use View instead of FlashList for nested contexts
 }
 
 interface GridItem {
@@ -49,6 +50,7 @@ export const PhotoGrid: React.FC<PhotoGridProps> = ({
   itemSpacing = spacing.xs,
   showOverlay = true,
   testID,
+  useSimpleLayout = false,
 }) => {
   const flashListRef = useRef<FlashList<GridItem>>(null);
   const [scrollPosition, setScrollPosition] = useState(0);
@@ -118,7 +120,7 @@ export const PhotoGrid: React.FC<PhotoGridProps> = ({
     }
 
     if (item.type === 'photo' && item.photo) {
-      const isSelected = selectedPhotos.has(item.photo.id);
+      const isSelected = selectedPhotos?.has(item.photo.id) ?? false;
       
       return (
         <PhotoThumbnail
@@ -241,6 +243,29 @@ export const PhotoGrid: React.FC<PhotoGridProps> = ({
   // Performance optimization: estimated item size
   const estimatedItemSize = itemSize + itemSpacing;
 
+  // Simple layout for nested contexts (avoids FlashList nesting issues)
+  if (useSimpleLayout) {
+    return (
+      <View style={styles.container} testID={testID}>
+        <View style={[styles.simpleGrid, { gap: itemSpacing }]}>
+          {photos.map((photo) => (
+            <PhotoThumbnail
+              key={photo.id}
+              photo={photo}
+              size={itemSize}
+              onPress={onPhotoPress}
+              onLongPress={onPhotoLongPress}
+              isSelected={selectedPhotos?.has(photo.id) ?? false}
+              showOverlay={showOverlay}
+              priority="normal"
+              testID={`photo-${photo.id}`}
+            />
+          ))}
+        </View>
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container} testID={testID}>
       <FlashList
@@ -260,7 +285,6 @@ export const PhotoGrid: React.FC<PhotoGridProps> = ({
         showsVerticalScrollIndicator={true}
         // Performance optimizations
         removeClippedSubviews={true}
-        initialNumToRender={numColumns * 3} // Render 3 rows initially
         // Accessibility
         accessible={true}
         accessibilityLabel={`Photo grid with ${photos.length} photos`}
@@ -366,6 +390,12 @@ const styles = StyleSheet.create({
     color: 'white',
     fontWeight: '600',
     fontSize: 14,
+  },
+
+  simpleGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
   },
 });
 

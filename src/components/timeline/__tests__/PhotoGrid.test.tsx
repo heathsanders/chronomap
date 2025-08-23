@@ -33,7 +33,7 @@ const mockFlashList = {
 };
 
 jest.mock('@shopify/flash-list', () => ({
-  FlashList: jest.forwardRef((props: any, ref: any) => {
+  FlashList: React.forwardRef((props: any, ref: any) => {
     // Assign mock methods to ref
     if (ref) {
       ref.current = mockFlashList;

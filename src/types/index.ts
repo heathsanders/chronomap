@@ -219,3 +219,76 @@ export interface ProcessedMetadata {
   modificationDate: Date;
   timezone?: string;
 }
+
+// Timeline Types
+export type TimelineGrouping = 'daily' | 'weekly' | 'monthly' | 'yearly';
+
+export interface DateSection {
+  date: string; // YYYY-MM-DD format
+  displayDate: string; // Human-readable format
+  photos: PhotoAsset[];
+  count: number;
+  startDate: Date;
+  endDate: Date;
+  grouping: TimelineGrouping;
+}
+
+export interface TimelinePhoto extends PhotoAsset {
+  sectionId: string;
+  indexInSection: number;
+  thumbnailUri?: string;
+  isVisible: boolean;
+}
+
+export interface TimelineSlice {
+  startIndex: number;
+  endIndex: number;
+  sections: DateSection[];
+  totalPhotos: number;
+  estimatedHeight: number;
+  cacheKey: string;
+}
+
+export interface TimelinePosition {
+  sectionIndex: number;
+  photoIndex: number;
+  scrollOffset: number;
+  date: Date;
+  timestamp: number;
+}
+
+export interface TimelineCache {
+  key: string;
+  data: DateSection[] | TimelineSlice | PhotoAsset[] | TimelinePhoto[];
+  timestamp: number;
+  accessCount: number;
+  size: number; // bytes
+}
+
+export interface TimelineQuery {
+  startDate?: Date;
+  endDate?: Date;
+  limit?: number;
+  offset?: number;
+  grouping?: TimelineGrouping;
+  sortOrder?: 'asc' | 'desc';
+  includeLocation?: boolean;
+  onlyFavorites?: boolean;
+}
+
+export interface TimelineMetrics {
+  totalSections: number;
+  totalPhotos: number;
+  dateRange: { start: Date; end: Date };
+  cacheSize: number;
+  averagePhotosPerSection: number;
+  memoryUsage: number;
+}
+
+// Navigation Types
+export type RootStackParamList = {
+  Onboarding: undefined;
+  Timeline: undefined;
+  Map: undefined;
+  Settings: undefined;
+};

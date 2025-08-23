@@ -50,6 +50,8 @@ export const colors = {
   black: '#171923',
   text: '#4A5568',
   textDark: '#2D3748',
+  textSecondary: '#718096',
+  textTertiary: '#A0AEC0',
   background: '#F7FAFC',
   surface: '#FFFFFF',
   border: '#E2E8F0',

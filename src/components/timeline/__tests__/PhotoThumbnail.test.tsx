@@ -118,7 +118,7 @@ describe('PhotoThumbnail', () => {
       const { getByRole } = render(<PhotoThumbnail {...defaultProps} />);
       
       const thumbnail = getByRole('imagebutton');
-      expect(thumbnail).toHaveAccessibilityLabel(
+      expect(thumbnail.props.accessibilityLabel).toEqual(
         expect.stringContaining(mockPhoto.filename)
       );
     });
@@ -140,7 +140,7 @@ describe('PhotoThumbnail', () => {
       );
       
       const thumbnail = getByRole('imagebutton');
-      expect(thumbnail).toHaveAccessibilityLabel(
+      expect(thumbnail.props.accessibilityLabel).toEqual(
         expect.stringContaining('has location data')
       );
     });
@@ -151,7 +151,7 @@ describe('PhotoThumbnail', () => {
       );
       
       const thumbnail = getByRole('imagebutton');
-      expect(thumbnail).toHaveAccessibilityLabel(
+      expect(thumbnail.props.accessibilityLabel).toEqual(
         expect.stringContaining('selected')
       );
     });
