@@ -13,6 +13,7 @@ import {
   ScrollView,
   TouchableOpacity,
   Animated,
+  Dimensions,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { FlashList } from '@shopify/flash-list';
@@ -22,7 +23,14 @@ import { RootStackParamList, DateSection, TimelinePosition, TimelineGrouping } f
 import { colors } from '@/config/colors';
 import { spacing } from '@/config/spacing';
 import { typography } from '@/config/typography';
-import { PhotoGrid, DateSectionHeader, DateNavigator } from '@/components/timeline';
+import { 
+  PhotoGrid, 
+  DateSectionHeader, 
+  DateNavigator, 
+  DateScrubber, 
+  TimelineScreenSkeleton,
+  PhotoGridSkeleton
+} from '@/components/timeline';
 import { useTimeline } from '@/hooks/useTimeline';
 import { initializePhotosOnStartup, refreshPhotosInStore } from '@/utils/photoLoader';
 
@@ -30,14 +38,21 @@ type TimelineScreenProps = {
   navigation: StackNavigationProp<RootStackParamList, 'Timeline'>;
 };
 
+const { width: screenWidth } = Dimensions.get('window');
+
 export default function TimelineScreen({ navigation }: TimelineScreenProps) {
   const flashListRef = useRef<FlashList<DateSection>>(null);
   const scrollY = useRef(new Animated.Value(0)).current;
+  const fadeAnim = useRef(new Animated.Value(1)).current;
+  const scaleAnim = useRef(new Animated.Value(1)).current;
   
   // Local state
   const [currentGrouping, setCurrentGrouping] = useState<TimelineGrouping>('daily');
   const [showDateNavigator, setShowDateNavigator] = useState(false);
-  // const [stickyHeaderIndex, setStickyHeaderIndex] = useState<number>(-1);
+  const [showDateScrubber, setShowDateScrubber] = useState(true);
+  const [currentScrollPosition, setCurrentScrollPosition] = useState(0);
+  const [currentDate, setCurrentDate] = useState<Date>(new Date());
+  const [isScrolling, setIsScrolling] = useState(false);
 
   // Use the timeline hook for enhanced timeline functionality
   const {
@@ -81,19 +96,38 @@ export default function TimelineScreen({ navigation }: TimelineScreenProps) {
   }, [currentGrouping, changeGrouping]);
 
   /**
-   * Handle date navigation
+   * Handle date navigation with smooth animation
    */
   const handleDateSelect = useCallback(async (date: Date) => {
     const position = await scrollToDate(date);
     if (position && flashListRef.current) {
-      // Scroll to the calculated position
+      // Animate to the calculated position with smooth easing
       flashListRef.current.scrollToOffset({ 
         offset: position.scrollOffset, 
         animated: true 
       });
+      
+      // Update current date immediately for UI feedback
+      setCurrentDate(date);
     }
     setShowDateNavigator(false);
   }, [scrollToDate]);
+
+  /**
+   * Handle date scrubber changes
+   */
+  const handleDateScrubberChange = useCallback(async (date: Date, sectionIndex: number) => {
+    if (flashListRef.current && sectionIndex < sections.length) {
+      // Smooth scroll to section
+      flashListRef.current.scrollToIndex({
+        index: sectionIndex,
+        animated: true,
+        viewPosition: 0.1, // Show section at top with small offset
+      });
+      
+      setCurrentDate(date);
+    }
+  }, [sections]);
 
   /**
    * Handle section header press for expansion/collapse
@@ -132,25 +166,60 @@ export default function TimelineScreen({ navigation }: TimelineScreenProps) {
   }, [refreshTimeline]);
 
   /**
-   * Handle scroll position changes for position tracking and sticky headers
+   * Handle scroll position changes for position tracking with animations
    */
   const handleScroll = useCallback((event: any) => {
-    const { contentOffset } = event.nativeEvent;
+    const { contentOffset, velocity } = event.nativeEvent;
+    const scrollOffset = contentOffset.y;
     
-    // Update animated value for scroll effects
-    scrollY.setValue(contentOffset.y);
+    // Update animated values for scroll effects
+    scrollY.setValue(scrollOffset);
+    setCurrentScrollPosition(scrollOffset);
+    setIsScrolling(Math.abs(velocity?.y || 0) > 0.1);
     
-    // Update position tracking (simplified - in production would calculate exact section/photo)
+    // Calculate current section based on scroll position
+    let currentSectionIndex = 0;
+    let currentSectionDate = new Date();
+    
+    if (sections.length > 0) {
+      // Estimate which section is currently visible based on scroll position
+      // This is a simplified calculation - in production you'd want more precise calculations
+      const estimatedIndex = Math.floor(scrollOffset / 300); // Assuming ~300px per section
+      currentSectionIndex = Math.min(Math.max(0, estimatedIndex), sections.length - 1);
+      currentSectionDate = sections[currentSectionIndex]?.startDate || new Date();
+    }
+    
+    setCurrentDate(currentSectionDate);
+    
+    // Create detailed position tracking
     const position: TimelinePosition = {
-      sectionIndex: 0, // Would calculate based on scroll position
+      sectionIndex: currentSectionIndex,
       photoIndex: 0,
-      scrollOffset: contentOffset.y,
-      date: new Date(),
+      scrollOffset,
+      date: currentSectionDate,
       timestamp: Date.now()
     };
     
     updatePosition(position);
-  }, [updatePosition, scrollY]);
+
+    // Animate header based on scroll direction
+    const scrollThreshold = 100;
+    const headerOpacity = scrollOffset > scrollThreshold ? 0.95 : 1;
+    const headerScale = scrollOffset > scrollThreshold ? 0.98 : 1;
+    
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: headerOpacity,
+        duration: 150,
+        useNativeDriver: true,
+      }),
+      Animated.timing(scaleAnim, {
+        toValue: headerScale,
+        duration: 150,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, [updatePosition, scrollY, sections, fadeAnim, scaleAnim]);
 
   /**
    * Render empty state when no photos
@@ -202,7 +271,15 @@ export default function TimelineScreen({ navigation }: TimelineScreenProps) {
    * Render enhanced timeline header with navigation and grouping controls
    */
   const renderHeader = useCallback(() => (
-    <View style={styles.headerContainer}>
+    <Animated.View 
+      style={[
+        styles.headerContainer,
+        {
+          opacity: fadeAnim,
+          transform: [{ scale: scaleAnim }],
+        }
+      ]}
+    >
       <View style={styles.titleRow}>
         <View style={styles.titleContainer}>
           <Text style={styles.headerTitle}>Your Timeline</Text>
@@ -256,8 +333,33 @@ export default function TimelineScreen({ navigation }: TimelineScreenProps) {
           ))}
         </View>
       </View>
-    </View>
-  ), [metrics, currentGrouping, handleGroupingChange]);
+
+      {/* Current Position Indicator */}
+      {isScrolling && (
+        <Animated.View 
+          style={[
+            styles.positionIndicator,
+            {
+              opacity: scrollY.interpolate({
+                inputRange: [0, 50, 100],
+                outputRange: [0, 0.8, 1],
+                extrapolate: 'clamp',
+              }),
+            }
+          ]}
+        >
+          <Text style={styles.positionText}>
+            {currentDate.toLocaleDateString('en', { 
+              weekday: 'short', 
+              month: 'short', 
+              day: 'numeric',
+              year: 'numeric'
+            })}
+          </Text>
+        </Animated.View>
+      )}
+    </Animated.View>
+  ), [metrics, currentGrouping, handleGroupingChange, fadeAnim, scaleAnim, isScrolling, currentDate, scrollY]);
 
   /**
    * Render individual timeline section with enhanced header
@@ -313,12 +415,14 @@ export default function TimelineScreen({ navigation }: TimelineScreenProps) {
     );
   }, [sections, renderSection, isRefreshing, refreshTimeline, renderHeader, handleScroll]);
 
-  // Show loading state
+  // Show loading state with skeleton
   if (isLoading && sections.length === 0) {
     return (
-      <SafeAreaView style={styles.container}>
-        {renderLoadingState()}
-      </SafeAreaView>
+      <TimelineScreenSkeleton 
+        isDarkMode={false}
+        sectionCount={6}
+        photosPerSection={9}
+      />
     );
   }
 
@@ -335,12 +439,25 @@ export default function TimelineScreen({ navigation }: TimelineScreenProps) {
     <SafeAreaView style={styles.container}>
       {renderTimeline()}
       
+      {/* Date Scrubber */}
+      {showDateScrubber && sections.length > 0 && (
+        <DateScrubber
+          sections={sections}
+          metrics={metrics}
+          currentDate={currentDate}
+          onDateChange={handleDateScrubberChange}
+          width={screenWidth}
+          visible={showDateScrubber}
+          testID="date-scrubber"
+        />
+      )}
+      
       {/* Date Navigator Modal */}
       <DateNavigator
         visible={showDateNavigator}
         sections={sections}
         metrics={metrics}
-        currentDate={new Date()}
+        currentDate={currentDate}
         onDateSelect={handleDateSelect}
         onClose={() => setShowDateNavigator(false)}
         testID="date-navigator"
@@ -391,7 +508,7 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: colors.primary[100],
+    backgroundColor: colors.neutral[100],
     justifyContent: 'center',
     alignItems: 'center',
     marginLeft: spacing.md,
@@ -422,8 +539,8 @@ const styles = StyleSheet.create({
     borderColor: colors.border,
   },
   groupingButtonActive: {
-    backgroundColor: colors.primary[500],
-    borderColor: colors.primary[500],
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
   },
   groupingButtonText: {
     ...typography.styles.caption,
@@ -433,6 +550,28 @@ const styles = StyleSheet.create({
   groupingButtonTextActive: {
     color: colors.white,
     fontWeight: '600',
+  },
+  positionIndicator: {
+    backgroundColor: colors.primary,
+    borderRadius: 12,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xs,
+    marginTop: spacing.sm,
+    alignSelf: 'center',
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.2,
+    shadowRadius: 2,
+  },
+  positionText: {
+    ...typography.styles.caption,
+    color: colors.white,
+    fontWeight: '600',
+    fontSize: 12,
   },
   dateSection: {
     marginBottom: spacing.sm,

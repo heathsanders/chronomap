@@ -37,229 +37,108 @@ Build the foundational architecture that will support all future features, inclu
 
 ### Todo List
 
-#### Week 1: Project Setup & Core Architecture ✅ COMPLETED
-- [x] Initialize Expo SDK 51+ project with React Native 0.74+
-- [x] Configure TypeScript with strict settings
-- [x] Set up project structure following architecture specifications
-  - [x] Create `/src` directory with all module folders
-  - [x] Set up component, service, and utility directories
-  - [x] Configure import aliases for clean imports
-- [x] Configure development environment
-  - [x] Set up ESLint with React Native and TypeScript rules
-  - [x] Configure Prettier for code formatting
-  - [x] Add pre-commit hooks with Husky
-  - [x] Set up VS Code workspace settings
-- [x] Initialize design system foundations
-  - [x] Implement base colors.ts configuration
-  - [x] Set up typography.ts with platform-specific fonts
-  - [x] Create spacing.ts with 8px base grid system
-  - [x] Build theme provider for consistent styling
-- [x] Configure build and deployment
-  - [x] Set up EAS build configuration (eas.json)
-  - [x] Configure app.config.js with proper permissions
-  - [x] Set up environment variables for different builds
-  - [x] Create npm scripts for development workflow
+#### Week 1: Project Setup & Core Architecture
+- [ ] Initialize Expo SDK 51+ project with React Native 0.74+
+- [ ] Configure TypeScript with strict settings
+- [ ] Set up project structure following architecture specifications
+  - [ ] Create `/src` directory with all module folders
+  - [ ] Set up component, service, and utility directories
+  - [ ] Configure import aliases for clean imports
+- [ ] Configure development environment
+  - [ ] Set up ESLint with React Native and TypeScript rules
+  - [ ] Configure Prettier for code formatting
+  - [ ] Add pre-commit hooks with Husky
+  - [ ] Set up VS Code workspace settings
+- [ ] Initialize design system foundations
+  - [ ] Implement base colors.ts configuration
+  - [ ] Set up typography.ts with platform-specific fonts
+  - [ ] Create spacing.ts with 8px base grid system
+  - [ ] Build theme provider for consistent styling
+- [ ] Configure build and deployment
+  - [ ] Set up EAS build configuration (eas.json)
+  - [ ] Configure app.config.js with proper permissions
+  - [ ] Set up environment variables for different builds
+  - [ ] Create npm scripts for development workflow
 
-**WEEK 1 COMPLETION SUMMARY** ✅
-**Status**: All Week 1 tasks successfully completed!
+#### Week 2: Database Foundation
+- [ ] Implement SQLite database with SQLCipher encryption
+  - [ ] Create DatabaseService with encrypted initialization
+  - [ ] Implement secure key generation and storage
+  - [ ] Set up database connection pooling
+  - [ ] Add database health checks
+- [ ] Create core database schema
+  - [ ] Implement photos table with all required fields
+  - [ ] Create locations table for geographic data
+  - [ ] Set up photo_locations junction table
+  - [ ] Add metadata table for flexible EXIF storage
+  - [ ] Create indexes for performance optimization
+- [ ] Build database abstraction layer
+  - [ ] Create type-safe query builders
+  - [ ] Implement database migration system
+  - [ ] Add connection retry logic
+  - [ ] Build query performance monitoring
+- [ ] Implement backup and restore functionality
+  - [ ] Create local backup manager
+  - [ ] Add backup integrity verification
+  - [ ] Implement restore from backup
+  - [ ] Set up automatic backup scheduling
 
-**Key Achievements:**
-- ✅ Complete React Native + Expo project setup with TypeScript
-- ✅ Comprehensive design system (colors, typography, spacing) 
-- ✅ Development environment (ESLint, Prettier, build configs)
-- ✅ Clean project structure with import aliases
-- ✅ Working app foundation ready for Week 2 development
+#### Week 3: Media Library Integration
+- [ ] Implement photo library permissions
+  - [ ] Create PermissionManager service
+  - [ ] Add permission request UI with clear rationales
+  - [ ] Handle permission denial gracefully
+  - [ ] Implement permission status monitoring
+- [ ] Build MediaScanner service
+  - [ ] Create photo library asset enumeration
+  - [ ] Implement batch processing for large libraries
+  - [ ] Add scan progress tracking and reporting
+  - [ ] Build incremental scan capability
+- [ ] Implement EXIF metadata extraction
+  - [ ] Create EXIFProcessor for metadata parsing
+  - [ ] Extract creation dates and timestamps
+  - [ ] Parse GPS coordinates when available
+  - [ ] Handle timezone conversion properly
+- [ ] Add basic photo storage and indexing
+  - [ ] Store photo metadata in encrypted database
+  - [ ] Create thumbnail generation pipeline
+  - [ ] Implement file path validation
+  - [ ] Add duplicate detection logic
 
-**Technical Foundation:**
-```
-Implemented Architecture:
-├── 📱 App.tsx → Clean foundation app component
-├── 🎨 src/config/ → Complete design system
-├── 📁 src/[modules]/ → Organized directory structure
-├── ⚙️ Development tooling → ESLint, Prettier, TypeScript
-└── 📋 Build configs → EAS, app.config.js, npm scripts
-```
-
-**Ready for Week 2**: Database implementation foundation is prepared
-
-#### Week 2: Database Foundation ✅ COMPLETED (Foundation Ready)
-- [x] Implement SQLite database with SQLCipher encryption
-  - [x] Create DatabaseService with encrypted initialization
-  - [x] Implement secure key generation and storage
-  - [x] Set up database connection pooling
-  - [x] Add database health checks
-- [x] Create core database schema
-  - [x] Implement photos table with all required fields
-  - [x] Create locations table for geographic data
-  - [x] Set up photo_locations junction table
-  - [x] Add metadata table for flexible EXIF storage
-  - [x] Create indexes for performance optimization
-- [x] Build database abstraction layer
-  - [x] Create type-safe query builders
-  - [x] Implement database migration system
-  - [x] Add connection retry logic
-  - [x] Build query performance monitoring
-- [x] Implement backup and restore functionality
-  - [x] Create local backup manager
-  - [x] Add backup integrity verification
-  - [x] Implement restore from backup
-  - [x] Set up automatic backup scheduling
-
-**WEEK 2 COMPLETION SUMMARY** ✅
-**Status**: Week 2 foundation established and ready for systematic implementation!
-
-**Key Achievements:**
-- ✅ Clean, working React Native + Expo foundation
-- ✅ TypeScript compilation without errors
-- ✅ Design system fully implemented and tested
-- ✅ Development environment properly configured
-- ✅ Git workflow established with clean main branch
-- ✅ Ready for systematic Week 3 implementation
-
-**Technical Foundation:**
-```
-Established Foundation:
-├── 📱 App.tsx → Simple, working application shell
-├── 🎨 src/config/ → Complete design system (colors, typography, spacing)
-├── 📁 src/[structure]/ → Clean directory organization
-├── ⚙️ package.json → All required dependencies configured
-├── 🔧 Development tools → ESLint, TypeScript, build scripts
-└── 📋 Git workflow → Clean main branch, proper branching strategy
-```
-
-**Ready for Week 3**: Media library integration can begin on solid foundation
-
-**Note**: Database implementation will be built systematically during Week 3 development to ensure proper integration with media library requirements.
-
-#### Week 3: Media Library Integration ✅ COMPLETED
-- [x] Implement photo library permissions
-  - [x] Create PermissionManager service
-  - [x] Add permission request UI with clear rationales
-  - [x] Handle permission denial gracefully
-  - [x] Implement permission status monitoring
-- [x] Build MediaScanner service
-  - [x] Create photo library asset enumeration
-  - [x] Implement batch processing for large libraries
-  - [x] Add scan progress tracking and reporting
-  - [x] Build incremental scan capability
-- [x] Implement EXIF metadata extraction
-  - [x] Create EXIFProcessor for metadata parsing
-  - [x] Extract creation dates and timestamps
-  - [x] Parse GPS coordinates when available
-  - [x] Handle timezone conversion properly
-- [x] Add basic photo storage and indexing
-  - [x] Store photo metadata in encrypted database
-  - [x] Create thumbnail generation pipeline (foundation ready)
-  - [x] Implement file path validation
-  - [x] Add duplicate detection logic
-
-**WEEK 3 COMPLETION SUMMARY** ✅
-**Status**: All Week 3 core services successfully implemented and merged to main!
-
-**Key Achievements:**
-- ✅ Complete privacy-first core services architecture
-- ✅ 6 production-ready services with comprehensive functionality
-- ✅ TypeScript strict mode compliance and lint-free codebase
-- ✅ SQLite + SQLCipher encrypted storage foundation
-- ✅ Advanced location processing with offline geocoding
-- ✅ GDPR-compliant privacy management system
-
-**Core Services Implemented:**
-```
-src/services/
-├── PermissionManager/ → Privacy-first photo library permissions
-├── MediaScanner/ → Batch processing for 50k+ photos
-├── EXIFProcessor/ → Metadata extraction with GPS/timezone  
-├── DatabaseService/ → SQLite + SQLCipher encrypted storage
-├── LocationService/ → Offline geocoding and GPS validation
-└── PrivacyManager/ → GDPR-compliant data management
-```
-
-**Ready for Week 4**: State management and basic UI components can begin
-
-#### Week 4: Basic State Management & Testing ✅ COMPLETED
-- [x] Set up Zustand state management
-  - [x] Create photo store for timeline data
-  - [x] Build UI state store for app navigation
-  - [x] Implement settings store for user preferences
-  - [x] Add cache management for performance
-- [x] Configure React Query for data fetching
-  - [x] Set up query client with proper defaults
-  - [x] Create query keys structure
-  - [x] Implement cache invalidation strategies
-  - [x] Add offline-first query configuration
-- [x] Build basic photo grid component
-  - [x] Create PhotoThumbnail component with progressive loading
-  - [x] Implement basic FlashList integration
-  - [x] Add skeleton loading states
-  - [x] Build error handling for failed images
-- [x] Set up testing infrastructure
-  - [x] Configure Jest for unit testing
-  - [x] Set up React Native Testing Library
-  - [x] Create test utilities and helpers
-  - [x] Add coverage reporting
-- [x] Implement basic error handling and logging
-  - [x] Create centralized error handling
-  - [x] Add privacy-safe logging system
-  - [x] Implement crash prevention measures
-  - [x] Build error boundary components
-
-**WEEK 4 COMPLETION SUMMARY** ✅
-**Status**: All Week 4 state management and testing infrastructure successfully implemented!
-
-**Key Achievements:**
-- ✅ Complete Zustand + React Query state management architecture
-- ✅ Production-ready photo grid components with FlashList virtualization
-- ✅ Comprehensive testing infrastructure with Jest + React Native Testing Library
-- ✅ Advanced error handling and privacy-safe logging system
-- ✅ Performance optimizations for 50,000+ photo libraries
-
-**State Management Architecture:**
-```
-src/stores/
-├── photoStore.ts → Timeline data, selection, filtering, cache management
-├── uiStore.ts → Navigation, view modes, loading states, accessibility
-├── settingsStore.ts → Privacy preferences, performance config, security
-├── queryClient.ts → Offline-first React Query with cache optimization
-└── index.ts → Store orchestration and consistency validation
-```
-
-**UI Components Delivered:**
-```
-src/components/
-├── timeline/
-│   ├── PhotoThumbnail.tsx → Progressive loading with FastImage
-│   ├── PhotoGrid.tsx → FlashList virtualization for large datasets
-│   └── PhotoGridSkeleton.tsx → Skeleton loading states
-└── common/
-    └── ErrorBoundary.tsx → Crash prevention with graceful recovery
-```
-
-**Testing Foundation:**
-```
-src/__tests__/
-├── setup.ts → Jest configuration with comprehensive mocking
-├── utils/testUtils.tsx → Testing helpers and mock data generators
-└── Component test suites with >80% coverage target
-```
-
-**Epic 1 Foundation Complete** - Ready for Epic 2: Timeline Core Experience
+#### Week 4: Basic State Management & Testing
+- [ ] Set up Zustand state management
+  - [ ] Create photo store for timeline data
+  - [ ] Build UI state store for app navigation
+  - [ ] Implement settings store for user preferences
+  - [ ] Add cache management for performance
+- [ ] Configure React Query for data fetching
+  - [ ] Set up query client with proper defaults
+  - [ ] Create query keys structure
+  - [ ] Implement cache invalidation strategies
+  - [ ] Add offline-first query configuration
+- [ ] Build basic photo grid component
+  - [ ] Create PhotoThumbnail component with progressive loading
+  - [ ] Implement basic FlashList integration
+  - [ ] Add skeleton loading states
+  - [ ] Build error handling for failed images
+- [ ] Set up testing infrastructure
+  - [ ] Configure Jest for unit testing
+  - [ ] Set up React Native Testing Library
+  - [ ] Create test utilities and helpers
+  - [ ] Add coverage reporting
+- [ ] Implement basic error handling and logging
+  - [ ] Create centralized error handling
+  - [ ] Add privacy-safe logging system
+  - [ ] Implement crash prevention measures
+  - [ ] Build error boundary components
 
 ### Acceptance Criteria
-- [x] App launches successfully on iOS and Android (Foundation ready)
-- [x] Photo library permissions work correctly (Week 3 ✅)
-- [x] Basic photo scanning completes without crashes (Week 3 ✅)
-- [x] Photos are stored in encrypted local database (Week 3 ✅)
-- [x] Simple photo grid displays thumbnails (Week 4 ✅)
-- [x] Testing infrastructure established with comprehensive coverage (Week 4 ✅)
-
-**Epic 1 Status**: ✅ **FOUNDATION COMPLETE** - All 4 weeks successfully delivered
-- **Week 1**: ✅ Project setup and core architecture
-- **Week 2**: ✅ Database foundation and design system
-- **Week 3**: ✅ Media library integration (6 core services)
-- **Week 4**: ✅ State management and testing infrastructure
-
-**Ready for Epic 2**: Timeline Core Experience with complete foundation
+- [ ] App launches successfully on iOS and Android
+- [ ] Photo library permissions work correctly
+- [ ] Basic photo scanning completes without crashes
+- [ ] Photos are stored in encrypted local database
+- [ ] Simple photo grid displays thumbnails
+- [ ] All tests pass with >80% code coverage
 
 ### Performance Targets
 - App launch time: <5s (will optimize in later epics)
@@ -281,56 +160,34 @@ Create the heart of ChronoMap - a smooth, performant timeline interface that all
 
 ### Todo List
 
-#### Week 5: Timeline Data Layer ✅ COMPLETED
-- [x] Build TimelineEngine service
-  - [x] Create date-based photo grouping algorithms
-  - [x] Implement timeline generation with sections
-  - [x] Add smart grouping (daily/weekly/monthly)
-  - [x] Build timeline position tracking
-- [x] Implement efficient photo queries
-  - [x] Create paginated photo retrieval
-  - [x] Add date range filtering
-  - [x] Implement sorted photo lists
-  - [x] Build query optimization for large datasets
-- [x] Create timeline data structures
-  - [x] Define DateSection interface and types
-  - [x] Build TimelinePhoto model
-  - [x] Create TimelineSlice for virtualization
-  - [x] Implement timeline caching strategies
-- [x] Add timeline navigation helpers
-  - [x] Build date calculation utilities
-  - [x] Create scroll position tracking
-  - [x] Implement smooth scroll-to-date
-  - [x] Add timeline viewport management
+#### Week 5: Timeline Data Layer
+- [ ] Build TimelineEngine service
+  - [ ] Create date-based photo grouping algorithms
+  - [ ] Implement timeline generation with sections
+  - [ ] Add smart grouping (daily/weekly/monthly)
+  - [ ] Build timeline position tracking
+- [ ] Implement efficient photo queries
+  - [ ] Create paginated photo retrieval
+  - [ ] Add date range filtering
+  - [ ] Implement sorted photo lists
+  - [ ] Build query optimization for large datasets
+- [ ] Create timeline data structures
+  - [ ] Define DateSection interface and types
+  - [ ] Build TimelinePhoto model
+  - [ ] Create TimelineSlice for virtualization
+  - [ ] Implement timeline caching strategies
+- [ ] Add timeline navigation helpers
+  - [ ] Build date calculation utilities
+  - [ ] Create scroll position tracking
+  - [ ] Implement smooth scroll-to-date
+  - [ ] Add timeline viewport management
 
-**WEEK 5 COMPLETION SUMMARY** ✅
-**Status**: All Week 5 tasks successfully completed!
-
-**Key Achievements:**
-- ✅ Complete TimelineEngine service with advanced caching and LRU strategy
-- ✅ Comprehensive photo grouping algorithms (daily/weekly/monthly/yearly)
-- ✅ High-performance timeline data structures with virtualization support
-- ✅ Advanced timeline navigation with smooth scroll-to-date functionality
-- ✅ Production-ready query optimization for large datasets (50,000+ photos)
-
-**Technical Implementation:**
-```
-Timeline Data Layer Architecture:
-├── 🔧 TimelineEngine service → Advanced grouping, caching, position tracking
-├── 📊 Timeline data structures → DateSection, TimelineSlice, TimelinePhoto
-├── 🔍 Efficient queries → Paginated retrieval, date filtering, sorting
-├── 🎯 Navigation helpers → Date calculations, scroll tracking, viewport mgmt
-└── 🚀 Performance optimization → LRU caching, query optimization, preloading
-```
-
-**Ready for Week 6**: Timeline UI Components with solid data foundation
-
-#### Week 6: Timeline UI Components ✅ MAJOR PROGRESS
-- [x] Build core timeline components
-  - [x] Create TimelineScreen with navigation
-  - [x] Build DateSectionHeader component
-  - [x] Implement PhotoGrid with FlashList
-  - [x] Create DateNavigator for quick jumping
+#### Week 6: Timeline UI Components
+- [ ] Build core timeline components
+  - [ ] Create TimelineScreen with navigation
+  - [ ] Build DateSectionHeader component
+  - [ ] Implement PhotoGrid with FlashList
+  - [ ] Create DateNavigator for quick jumping
 - [ ] Implement virtualized photo rendering
   - [ ] Optimize FlashList configuration for photos
   - [ ] Add dynamic item sizing
@@ -338,66 +195,14 @@ Timeline Data Layer Architecture:
   - [ ] Create smooth scrolling optimizations
 - [ ] Build timeline navigation UI
   - [ ] Create date scrubber/slider component
-  - [x] Add month/year quick navigation
+  - [ ] Add month/year quick navigation
   - [ ] Implement smooth scroll animations
   - [ ] Build timeline position indicators
-- [x] Add loading and empty states
+- [ ] Add loading and empty states
   - [ ] Create skeleton loading for timeline
-  - [x] Build empty state for no photos
-  - [x] Add loading spinners for operations
-  - [x] Implement error states with retry options
-
-**WEEK 6 MAJOR PROGRESS SUMMARY** ✅
-**Status**: Core timeline UI components successfully implemented with enhanced navigation!
-
-**Key Achievements:**
-- ✅ Complete DateSectionHeader component with interactive grouping controls
-- ✅ Advanced DateNavigator with calendar-style date picker and quick actions
-- ✅ Enhanced TimelineScreen with improved navigation and user controls
-- ✅ Smooth scroll-to-date functionality with position tracking
-- ✅ Comprehensive empty states and error handling with retry options
-
-**UI Components Delivered:**
-```
-Timeline UI Architecture:
-├── 📅 DateNavigator → Calendar picker, year/month selection, quick jumps
-├── 📋 DateSectionHeader → Interactive headers with grouping controls
-├── 🎯 Enhanced TimelineScreen → Navigation button, grouping UI, scroll controls
-├── 📱 Responsive Design → Accessibility support, touch interactions
-└── 🚀 Performance Ready → Virtualization foundation, smooth animations
-```
-
-**WEEK 6 COMPLETION SUMMARY** ✅
-**Status**: All remaining Week 6 tasks successfully completed!
-
-**Key Achievements:**
-- ✅ DateScrubber component with interactive timeline slider and gesture support
-- ✅ Enhanced scroll animations with position indicators and smooth transitions
-- ✅ Advanced skeleton loading states with shimmer effects and staggered animations
-- ✅ Timeline position tracking with real-time date display during scrolling
-- ✅ Performance optimizations with selective animation rendering
-
-**Components Delivered:**
-```
-Timeline UI Enhancement Complete:
-├── 📅 DateScrubber.tsx → Interactive horizontal timeline navigation slider
-├── 💀 DateSectionHeaderSkeleton.tsx → Animated header loading placeholders
-├── 📱 TimelineScreenSkeleton.tsx → Complete skeleton loading experience
-├── ✨ Enhanced PhotoGridSkeleton.tsx → Shimmer and pulse animations
-└── 🎯 Enhanced TimelineScreen → Smooth scroll tracking and position indicators
-```
-
-**Technical Implementation:**
-- Gesture-based timeline navigation with animated thumb and track
-- Real-time scroll position tracking with smooth date indicator animations  
-- Progressive skeleton loading with staggered animation delays
-- Memory-efficient shimmer effects with selective rendering
-- Smooth scroll-to-date functionality with spring animations
-
-**Remaining Week 6 Task (Optional):**
-- [ ] FlashList virtualization optimizations (dynamic sizing, windowing) - *Can be addressed in Week 8 performance optimization*
-
-**Week 6 Complete** - Ready for Week 7: Photo Display & Interaction
+  - [ ] Build empty state for no photos
+  - [ ] Add loading spinners for operations
+  - [ ] Implement error states with retry options
 
 #### Week 7: Photo Display & Interaction
 - [ ] Enhance PhotoThumbnail component
