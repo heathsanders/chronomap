@@ -22,20 +22,40 @@ export async function loadPhotosFromDatabase(): Promise<PhotoAsset[]> {
     });
 
     // Convert database photos to PhotoAsset format
-    const storePhotos: PhotoAsset[] = dbPhotos.map(dbPhoto => ({
-      id: dbPhoto.assetId,
-      uri: dbPhoto.filePath,
-      filename: dbPhoto.filename,
-      width: dbPhoto.width,
-      height: dbPhoto.height,
-      creationTime: dbPhoto.createdAt.getTime(),
-      modificationTime: dbPhoto.modifiedAt.getTime(),
-      mediaType: dbPhoto.mimeType.startsWith('image/') ? 'photo' : 'video' as 'photo' | 'video',
-      mediaSubtypes: [],
-      albumId: dbPhoto.assetId,
-      duration: undefined, // Could be populated from EXIF if available
-      location: dbPhoto.location
-    }));
+    const storePhotos: PhotoAsset[] = await Promise.all(
+      dbPhotos.map(async (dbPhoto) => {
+        let displayUri = dbPhoto.filePath;
+        
+        // If we have a ph:// URI, try to get the localUri for display
+        if (dbPhoto.filePath.startsWith('ph://')) {
+          console.log(`Converting ph:// URI for ${dbPhoto.filename}`);
+          try {
+            const MediaLibrary = await import('expo-media-library');
+            const assetInfo = await MediaLibrary.getAssetInfoAsync(dbPhoto.assetId);
+            displayUri = assetInfo.localUri || assetInfo.uri || dbPhoto.filePath;
+            console.log(`Converted ${dbPhoto.filename}: ${dbPhoto.filePath} -> ${displayUri}`);
+          } catch (error) {
+            console.warn(`Failed to convert ph:// URI for ${dbPhoto.filename}:`, error);
+            // Fall back to original URI
+          }
+        }
+        
+        return {
+          id: dbPhoto.assetId,
+          uri: displayUri,
+          filename: dbPhoto.filename,
+          width: dbPhoto.width,
+          height: dbPhoto.height,
+          creationTime: dbPhoto.createdAt.getTime(),
+          modificationTime: dbPhoto.modifiedAt.getTime(),
+          mediaType: dbPhoto.mimeType.startsWith('image/') ? 'photo' : 'video' as 'photo' | 'video',
+          mediaSubtypes: [],
+          albumId: dbPhoto.assetId,
+          duration: undefined, // Could be populated from EXIF if available
+          location: dbPhoto.location
+        };
+      })
+    );
 
     console.log(`Loaded ${storePhotos.length} photos from database`);
     if (storePhotos.length > 0) {

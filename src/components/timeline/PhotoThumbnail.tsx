@@ -67,20 +67,17 @@ export const PhotoThumbnail: React.FC<PhotoThumbnailProps> = ({
     return Math.round(size * clampedRatio);
   }, [size]);
 
-  // Generate thumbnail URI - use original URI directly for ph:// URLs
+  // Generate thumbnail URI - warn if still using ph:// URLs
   const thumbnailUri = useMemo(() => {
     console.log(`PhotoThumbnail: Processing photo ${photo.filename}, uri: ${photo.uri}`);
     
-    // React Native can handle ph:// URLs directly, but not with query parameters
-    // For iOS Photos framework URLs (ph://), use the original URI
+    // Warn if we still have ph:// URLs (should have been converted to localUri)
     if (photo.uri.startsWith('ph://')) {
-      console.log(`PhotoThumbnail: Using ph:// URI directly: ${photo.uri}`);
-      return photo.uri;
+      console.warn(`PhotoThumbnail: Still using ph:// URI for ${photo.filename}: ${photo.uri}`);
+      console.warn('This will likely fail to load. URI should have been converted to localUri during photo loading.');
     }
     
-    // For other URI schemes, we could add size parameters
-    // But for now, use original URI for maximum compatibility
-    console.log(`PhotoThumbnail: Using original URI: ${photo.uri}`);
+    console.log(`PhotoThumbnail: Using URI: ${photo.uri}`);
     return photo.uri;
   }, [photo.uri, photo.filename]);
 
